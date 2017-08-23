@@ -1,0 +1,60 @@
+//
+// Created by dragoon on 8/20/17.
+//
+
+#include "storage.h"
+
+User storage::users[usersArrayLength];
+Location storage::locations[locationsArrayLength];
+Visit storage::visits[visitsArrayLength];
+
+void ::storage::printCnt() {
+    std::vector<int> visitsCount;
+    int sum = 0;
+    size_t maxVal = 0;
+    int cnt = 0;
+    int size = (sizeof locations) / (sizeof locations[0]);
+    for (int i = 0; i != size; ++i) {
+        if (locations[i].id == 0) {
+            continue;
+        }
+        ++cnt;
+        visitsCount.push_back(locations[i].visits.size());
+        sum += locations[i].visits.size();
+        maxVal = std::max(maxVal, locations[i].visits.size());
+    }
+    fprintf(stdout, "%d locations\n", cnt);
+    fprintf(stdout, "%zu max visits per location\n", maxVal);
+    fprintf(stdout, "%.5f avg visits per location\n", ((float) sum) / visitsCount.size());
+    std::sort(visitsCount.begin(), visitsCount.end());
+    fprintf(stdout, "%d  median visits per location\n", visitsCount[visitsCount.size() / 2]);
+    sum = 0;
+    maxVal = 0;
+    cnt = 0;
+    visitsCount.clear();
+    size = (sizeof users) / (sizeof users[0]);
+    for (int i = 0; i != size; ++i) {
+        if (users[i].id == 0) {
+            continue;
+        }
+        ++cnt;
+        visitsCount.push_back(users[i].visits.size());
+        sum += users[i].visits.size();
+        maxVal = std::max(maxVal, users[i].visits.size());
+    }
+    fprintf(stdout, "%d users\n", cnt);
+    fprintf(stdout, "%zu max visits per user\n", maxVal);
+    fprintf(stdout, "%.5f avg visits per user\n", ((float) sum) / visitsCount.size());
+    std::sort(visitsCount.begin(), visitsCount.end());
+    fprintf(stdout, "%d  median visits per user\n", visitsCount[visitsCount.size() / 2]);
+
+    cnt = 0;
+    size = (sizeof visits) / (sizeof visits[0]);
+    for (int i = 0; i != size; ++i) {
+        if (visits[i].id == 0) {
+            continue;
+        }
+        ++cnt;
+    }
+    fprintf(stdout, "%d visits\n", cnt);
+}

@@ -1,0 +1,182 @@
+//
+// Created by dragoon on 8/20/17.
+//
+
+#include "UserGetHandler.h"
+
+namespace UserGetHandler {
+
+    char VISIT_FORMAT_PLACE[] = "{\"place\":\"";
+    char VISITED_AT[] = "\",\"visited_at\":";
+    char MARK[] = ",\"mark\":}";
+    char USER_VISITS_FORMAT[] = "{\"visits\":[";
+    char USER_VISITS_ENDING[] = "]}";
+    char NO_VISITS_BUF[] = "HTTP/1.1 200 OK\r\nConnection: Keep-Alive\r\nContent-Type: application/json\r\nContent-Length: 13\r\n\r\n{\"visits\":[]}";
+    const size_t NO_VISITS_BUF_SZ = sizeof(NO_VISITS_BUF) / sizeof(char) - 1;
+
+}
+
+void ::UserGetHandler::process(Buffer *buffer) {
+    char *buf = buffer->rdBuf;
+    int userId = Util::tryParsePositiveIntPath(buf + 11); // 11 pos
+    if (userId == INT_MIN) {
+        buffer->writeNotFound();
+        return;
+    }
+    User *user = userId < storage::usersArrayLength ? storage::users + userId : NULL;
+    if (user == NULL || user->id == 0) {
+        buffer->writeNotFound();
+        return;
+    }
+    char *lastPathChr = ::Util::getLastPathCharPtr(buf + 12);
+    if (*(lastPathChr - 1) != 115) { // just get by id
+        buffer->writeResponse(user->getBuffer, user->getSize);
+    } else { // user visits
+        bool hasQuery = *(lastPathChr++) == '?';
+        if (hasQuery) {
+            int toDistance = INT_MIN;
+            int toDate = INT_MIN;
+            int fromDate = INT_MIN;
+            char *country = 0;
+            std::vector<char *> query;
+            ::Util::parseQuery(lastPathChr, query);
+            for (int i = 0; i != query.size(); i += 2) {
+                switch (query[i][3]) {
+                    case 'i':
+                        toDistance = ::Util::tryParsePositiveInt(query[i + 1]);
+                        if (toDistance == INT_MIN) {
+                            buffer->writeBadRequest();
+                            return;
+                        }
+                        break;
+                    case 'a':
+                        toDate = ::Util::tryParsePositiveInt(query[i + 1]);
+                        if (toDate == INT_MIN) {
+                            buffer->writeBadRequest();
+                            return;
+                        }
+                        break;
+                    case 'm':
+                        fromDate = ::Util::tryParsePositiveInt(query[i + 1]);
+                        if (fromDate == INT_MIN) {
+                            buffer->writeBadRequest();
+                            return;
+                        }
+                        break;
+                    default:
+                        country = query[i + 1];
+                }
+            }
+            if (user->visits.empty()) {
+                buffer->writeResponse(NO_VISITS_BUF, NO_VISITS_BUF_SZ);
+                return;
+            }
+            std::vector<Visit *> visits(user->visits.begin(), user->visits.end());
+            if (country != 0) {
+                ::Util::uriDecode(country);
+                for (std::vector<Visit *>::iterator it = visits.begin(); it != visits.end();) {
+                    if (strcmp(storage::locations[(*it)->location].country, country)) {
+                        *it = *visits.rbegin();
+                        visits.pop_back();
+                    } else {
+                        ++it;
+                    }
+                }
+                if (visits.empty()) {
+                    buffer->writeResponse(NO_VISITS_BUF, NO_VISITS_BUF_SZ);
+                    return;
+                }
+            }
+            if (toDistance != INT_MIN) {
+                for (std::vector<Visit *>::iterator it = visits.begin(); it != visits.end();) {
+                    if (storage::locations[(*it)->location].distance >= toDistance) {
+                        *it = *visits.rbegin();
+                        visits.pop_back();
+                    } else {
+                        ++it;
+                    }
+                }
+                if (visits.empty()) {
+                    buffer->writeResponse(NO_VISITS_BUF, NO_VISITS_BUF_SZ);
+                    return;
+                }
+            }
+            if (toDate != INT_MIN) {
+                for (std::vector<Visit *>::iterator it = visits.begin(); it != visits.end();) {
+                    if ((*it)->visitedAt >= toDate) {
+                        *it = *visits.rbegin();
+                        visits.pop_back();
+                    } else {
+                        ++it;
+                    }
+                }
+                if (visits.empty()) {
+                    buffer->writeResponse(NO_VISITS_BUF, NO_VISITS_BUF_SZ);
+                    return;
+                }
+            }
+            if (fromDate != INT_MIN) {
+                for (std::vector<Visit *>::iterator it = visits.begin(); it != visits.end();) {
+                    if ((*it)->visitedAt <= fromDate) {
+                        *it = *visits.rbegin();
+                        visits.pop_back();
+                    } else {
+                        ++it;
+                    }
+                }
+                if (visits.empty()) {
+                    buffer->writeResponse(NO_VISITS_BUF, NO_VISITS_BUF_SZ);
+                    return;
+                }
+            }
+            std::sort(visits.begin(), visits.end(), [](const Visit *first, const Visit *second) {
+                return first->visitedAt < second->visitedAt;
+            });
+            writeResponse(buffer, visits);
+        } else {
+            if (user->visits.empty()) {
+                buffer->writeResponse(NO_VISITS_BUF, NO_VISITS_BUF_SZ);
+                return;
+            }
+            std::sort(user->visits.begin(), user->visits.end(), [](const Visit *first, const Visit *second) {
+                return first->visitedAt < second->visitedAt;
+            });
+            writeResponse(buffer, user->visits);
+        }
+    }
+}
+
+inline void ::UserGetHandler::writeResponse(Buffer *buffer, const std::vector<Visit *> &visits) {
+    char *tempAnsBuffer = buffer->rdBuf;
+    tempAnsBuffer += ::Util::copyCharArray(USER_VISITS_FORMAT, tempAnsBuffer);
+    {
+        tempAnsBuffer = formatVisit(tempAnsBuffer, visits[0], buffer->smallBuf);
+        for (int i = 1; i != visits.size(); ++i) {
+            *tempAnsBuffer++ = ',';
+            tempAnsBuffer = formatVisit(tempAnsBuffer, visits[i], buffer->smallBuf);
+        };
+    }
+    tempAnsBuffer += ::Util::copyCharArray(USER_VISITS_ENDING, tempAnsBuffer);
+    *tempAnsBuffer = 0;
+
+    char *writeBuf = buffer->wrBuf;
+    writeBuf += ::Util::copyCharArray(Const::OK_PREPARED, writeBuf);
+    writeBuf += ::Util::uintToStringBytes((int) (tempAnsBuffer - buffer->rdBuf), writeBuf, buffer->smallBuf);
+    writeBuf += ::Util::copyCharArray(Const::OK_PREPARED_SECOND, writeBuf);
+    writeBuf += ::Util::copyCharArray(buffer->rdBuf, writeBuf);
+    *writeBuf = 0;
+
+    buffer->writeResponse(buffer->wrBuf, writeBuf - buffer->wrBuf);
+}
+
+inline char *::UserGetHandler::formatVisit(char *buffer, const Visit *visit, char *smallBuf) {
+    buffer += ::Util::copyCharArray(VISIT_FORMAT_PLACE, buffer);
+    buffer += ::Util::copyCharArray(::storage::locations[visit->location].place.c_str(), buffer);
+
+    buffer += ::Util::copyCharArray(VISITED_AT, buffer);
+    buffer += ::Util::intToStringBytes(visit->visitedAt, buffer, smallBuf);
+
+    buffer += ::Util::copyCharArray(MARK, buffer);
+    *(buffer - 2) = (char) (visit->mark + '0');
+    return buffer;
+}
