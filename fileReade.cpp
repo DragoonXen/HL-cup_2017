@@ -74,7 +74,7 @@ void ::fileReade::readLocations(std::stringstream *tokenizer) {
         storage::locations[tmpLocation.id] = tmpLocation;
 
         storage::locations[tmpLocation.id].updateLocationOutput(&Buffer::instance);
-        maxLengthResponseLocation = std::max(maxLengthResponseLocation, storage::locations[tmpLocation.id].getSize);
+        ::fileReade::maxLengthResponseLocation = std::max(::fileReade::maxLengthResponseLocation, storage::locations[tmpLocation.id].getSize);
     } while (tokenizer->rdbuf()->in_avail());
 }
 
@@ -98,7 +98,7 @@ void ::fileReade::readUsers(std::stringstream *tokenizer) {
         storage::users[tmpUser.id] = tmpUser;
 
         storage::users[tmpUser.id].updateUserOutput(&Buffer::instance);
-        maxLengthResponseUser = std::max(maxLengthResponseUser, storage::locations[tmpUser.id].getSize);
+        ::fileReade::maxLengthResponseUser = std::max(::fileReade::maxLengthResponseUser, storage::users[tmpUser.id].getSize);
     } while (tokenizer->rdbuf()->in_avail());
 }
 
@@ -123,7 +123,7 @@ void ::fileReade::readVisits(std::stringstream *tokenizer) {
         storage::users[tmpVisit.user].visits.push_back(storage::visits + tmpVisit.id);
 
         storage::visits[tmpVisit.id].updateVisitOutput(&Buffer::instance);
-        maxLengthResponseVisit = std::max(maxLengthResponseVisit, storage::locations[tmpVisit.id].getSize);
+        ::fileReade::maxLengthResponseVisit = std::max(::fileReade::maxLengthResponseVisit, storage::visits[tmpVisit.id].getSize);
     } while (tokenizer->rdbuf()->in_avail());
 }
 

@@ -8,7 +8,7 @@ namespace UserGetHandler {
 
     char VISIT_FORMAT_PLACE[] = "{\"place\":\"";
     char VISITED_AT[] = "\",\"visited_at\":";
-    char MARK[] = ",\"mark\":}";
+    char MARK[] = ",\"mark\": }";
     char USER_VISITS_FORMAT[] = "{\"visits\":[";
     char USER_VISITS_ENDING[] = "]}";
     char NO_VISITS_BUF[] = "HTTP/1.1 200 OK\r\nConnection: Keep-Alive\r\nContent-Type: application/json\r\nContent-Length: 13\r\n\r\n{\"visits\":[]}";

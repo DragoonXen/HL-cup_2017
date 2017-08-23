@@ -8,8 +8,9 @@
 
 #include "../Buffer.h"
 
-namespace UserPostHandler {
-    void process(Buffer *buffer);
+class UserPostHandler {
+public:
+    static void process(Buffer *buffer);
 };
 
 

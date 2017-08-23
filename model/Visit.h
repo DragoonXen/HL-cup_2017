@@ -11,7 +11,7 @@
 class Buffer;
 
 class Visit {
-    static const int MAX_BUF_SIZE = 165;
+    static const int MAX_BUF_SIZE = 189;
 public:
     int id;
     int location;

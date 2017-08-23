@@ -29,7 +29,7 @@ void User::updateUserOutput(Buffer *buffer) {
     tempAnsBuffer += ::Util::copyCharArray(this->lastName, tempAnsBuffer);
 
     tempAnsBuffer += ::Util::copyCharArray(Const::USER_FORMAT_GENDER_AND_BD, tempAnsBuffer);
-    *(tempAnsBuffer - Const::USER_FORMAT_GENDER_AND_BD_SZ + 14) = this->male;
+    *(tempAnsBuffer - Const::USER_FORMAT_GENDER_AND_BD_SZ + 13) = this->male;
     tempAnsBuffer += ::Util::intToStringBytes(this->birthDate, tempAnsBuffer, buffer->smallBuf);
     *(tempAnsBuffer++) = '}';
     *tempAnsBuffer = 0;// for copy char array

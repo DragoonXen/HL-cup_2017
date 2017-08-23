@@ -14,7 +14,7 @@
 class Buffer;
 
 class User {
-    static const int MAX_BUF_SIZE = 575;
+    static const int MAX_BUF_SIZE = 599;
 public:
     int id;
     char email[201]; // 100 symb

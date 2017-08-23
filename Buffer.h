@@ -50,7 +50,10 @@ public:
         writeResponse();
     }
 
-    void processRequest();
+    inline void processRequest() {
+        readCount = read(source, rdBuf, sizeof rdBuf);
+        writePos = writeLength = 0;
+    }
 
     inline bool writeResponse() {
         int writtenBytes = write(source, bufToWrite + writePos, writeLength - writePos);

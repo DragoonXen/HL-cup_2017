@@ -33,7 +33,6 @@ void Location::updateLocationOutput(Buffer *buffer) {
     *tempAnsBuffer++ = '}';
     *tempAnsBuffer = 0;
 
-
     char *writeBuf = this->getBuffer;
     writeBuf += ::Util::copyCharArray(Const::OK_PREPARED, writeBuf);
     writeBuf += ::Util::uintToStringBytes((int) (tempAnsBuffer - buffer->rdBuf), writeBuf, buffer->smallBuf);

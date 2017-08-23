@@ -169,7 +169,7 @@ int main(int argc, char *argv[]) {
 //                    *(&events[i].data.u32 + 1) = NO_BUFFER;
 //                    fprintf(stdout, "closeConnection while buffer %d in use %d\n", bufNom, events[i].data.fd);
 //                }
-                std::cout << "close connection by event" << std::endl;
+//                std::cout << "close connection by event" << std::endl;
                 close(events[i].data.fd); // close connection
                 continue;
             }
@@ -223,6 +223,7 @@ int main(int argc, char *argv[]) {
 //                    }
                     Buffer::instance.source = events[i].data.fd;
                     Buffer::instance.processRequest();
+                    Routing::process(&Buffer::instance);
 //                    if (!Buffer::instance.complete()) {
 //                        Buffer::instance.writeResponse()
 //                        if (Buffer::instance.closeConnection) {
