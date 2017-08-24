@@ -15,8 +15,8 @@ static int make_socket_nodelay(int sfd) {
 
     flags = 1;
     int s = setsockopt(sfd, IPPROTO_TCP, TCP_NODELAY, (char *) &flags, sizeof(int));
-//    setsockopt(sfd, IPPROTO_TCP, TCP_QUICKACK, (char *) &flags, sizeof(int));
-//    setsockopt(sfd, SOL_SOCKET, SO_DONTROUTE, (char *) &flags, sizeof(int));
+    setsockopt(sfd, IPPROTO_TCP, TCP_QUICKACK, (char *) &flags, sizeof(int));
+    setsockopt(sfd, SOL_SOCKET, SO_DONTROUTE, (char *) &flags, sizeof(int));
     if (s < 0) {
         perror("setsockopt");
         return -1;
@@ -52,7 +52,7 @@ create_and_bind(char *port) {
     int s, sfd;
 
     memset(&hints, 0, sizeof(struct addrinfo));
-    hints.ai_family = AF_UNSPEC;     /* Return IPv4 and IPv6 choices */
+    hints.ai_family = PF_INET;     /* Return IPv4 and IPv6 choices */
     hints.ai_socktype = SOCK_STREAM; /* We want a TCP socket */
     hints.ai_flags = AI_PASSIVE;     /* All interfaces */
 
@@ -94,7 +94,7 @@ Buffer Buffer::instance;
 //int currBuffersTop;
 
 int main(int argc, char *argv[]) {
-//
+
 //    int which = PRIO_PROCESS;
 //    int ret;
 //    ret = setpriority(which, getpid(), -20);
@@ -164,7 +164,7 @@ int main(int argc, char *argv[]) {
     while (1) {
         int n, i;
 
-        n = epoll_wait(efd, events, MAXEVENTS, -1);
+        n = epoll_wait(efd, events, MAXEVENTS, 0);
         int e;
 //        fprintf(stdout, "%d events received\n", n);
         for (i = 0; i < n; i++) {
@@ -204,7 +204,7 @@ int main(int argc, char *argv[]) {
                     make_socket_nodelay(infd);
 
                     events[newEvents].data.fd = infd;
-                    *(&events[newEvents].data.u32 + 1) = NO_BUFFER;
+//                    *(&events[newEvents].data.u32 + 1) = NO_BUFFER;
                     events[newEvents].events = EPOLLIN | EPOLLHUP | EPOLLRDHUP;
 //                    fprintf(stdout, "%d\n", events[newEvents].events);
                     s = epoll_ctl(efd, EPOLL_CTL_ADD, infd, &events[newEvents++]);

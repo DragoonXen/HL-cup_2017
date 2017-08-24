@@ -16,7 +16,7 @@ void ::fileReade::readData(const char *path) {
         /* print all the files and directories within directory */
         while ((ent = readdir(dir)) != NULL) {
             if (!strcmp(ent->d_name + strlen(ent->d_name) - 5, ".json")) {
-                fprintf(stdout, "%s\n", ent->d_name);
+//                fprintf(stdout, "%s\n", ent->d_name);
                 std::ifstream myfile(dirPath + '/' + ent->d_name);
                 std::string str;
                 std::getline(myfile, str);
