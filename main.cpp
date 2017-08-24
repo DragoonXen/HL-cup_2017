@@ -15,6 +15,8 @@ static int make_socket_nodelay(int sfd) {
 
     flags = 1;
     int s = setsockopt(sfd, IPPROTO_TCP, TCP_NODELAY, (char *) &flags, sizeof(int));
+//    setsockopt(sfd, IPPROTO_TCP, TCP_QUICKACK, (char *) &flags, sizeof(int));
+//    setsockopt(sfd, SOL_SOCKET, SO_DONTROUTE, (char *) &flags, sizeof(int));
     if (s < 0) {
         perror("setsockopt");
         return -1;
@@ -92,6 +94,12 @@ Buffer Buffer::instance;
 //int currBuffersTop;
 
 int main(int argc, char *argv[]) {
+//
+//    int which = PRIO_PROCESS;
+//    int ret;
+//    ret = setpriority(which, getpid(), -20);
+//    std::cout << ret << std::endl;
+
     std::cout << "start program" << std::endl;
     fileReade::readData(argc < 3 ? "/root/" : argv[2]);
     int sfd, s;

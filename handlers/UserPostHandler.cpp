@@ -106,6 +106,7 @@ void UserPostHandler::process(Buffer *buffer) {
         Util::unicodeDecode(lastName, user->lastName);
         user->male = gender;
         user->birthDate = Util::parseInt(birthDate);
+        user->updateUserOutput(buffer);
     } else {
         int userId = Util::tryParsePositiveIntPostPath(buf + 12); // 11 pos
         if (userId == INT_MIN) {
@@ -210,5 +211,6 @@ void UserPostHandler::process(Buffer *buffer) {
         if (birthDate != 0) {
             user->birthDate = Util::parseInt(birthDate);
         }
+        user->updateUserOutput(buffer);
     }
 }

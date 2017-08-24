@@ -15,4 +15,4 @@ CMD date && \
     make > /dev/null &&\
     echo 'Done.' &&\
     date && \
-    ./epoll_try
+    chrt -f 50 ./epoll_try
