@@ -157,16 +157,17 @@ inline void ::UserGetHandler::writeResponse(Buffer *buffer, const std::vector<Vi
         };
     }
     tempAnsBuffer += ::Util::copyCharArray(USER_VISITS_ENDING, tempAnsBuffer);
-    *tempAnsBuffer = 0;
+//    *tempAnsBuffer = 0;
+//    buffer->writeResponse(buffer->rdBuf, )
 
     char *writeBuf = buffer->wrBuf;
     writeBuf += ::Util::copyCharArray(Const::OK_PREPARED, writeBuf);
     writeBuf += ::Util::uintToStringBytes((int) (tempAnsBuffer - buffer->rdBuf), writeBuf, buffer->smallBuf);
     writeBuf += ::Util::copyCharArray(Const::OK_PREPARED_SECOND, writeBuf);
-    writeBuf += ::Util::copyCharArray(buffer->rdBuf, writeBuf);
-    *writeBuf = 0;
+    buffer->writeResponse(buffer->wrBuf, writeBuf - buffer->wrBuf, buffer->rdBuf, tempAnsBuffer - buffer->rdBuf);
+//    *writeBuf = 0;
 
-    buffer->writeResponse(buffer->wrBuf, writeBuf - buffer->wrBuf);
+//    buffer->writeResponse(buffer->wrBuf, writeBuf - buffer->wrBuf);
 }
 
 inline char *::UserGetHandler::formatVisit(char *buffer, const Visit *visit, char *smallBuf) {
