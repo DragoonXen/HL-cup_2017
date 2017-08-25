@@ -4,16 +4,16 @@
 
 #include "storage.h"
 
-User storage::users[usersArrayLength];
-Location storage::locations[locationsArrayLength];
-Visit storage::visits[visitsArrayLength];
+User *::storage::users;
+Location *::storage::locations;
+Visit *::storage::visits;
 
 void ::storage::printCnt() {
     std::vector<int> visitsCount;
     int sum = 0;
     size_t maxVal = 0;
     int cnt = 0;
-    int size = (sizeof locations) / (sizeof locations[0]);
+    int size = locationsArrayLength;
     for (int i = 0; i != size; ++i) {
         if (locations[i].id == 0) {
             continue;
@@ -32,7 +32,7 @@ void ::storage::printCnt() {
     maxVal = 0;
     cnt = 0;
     visitsCount.clear();
-    size = (sizeof users) / (sizeof users[0]);
+    size = usersArrayLength;
     for (int i = 0; i != size; ++i) {
         if (users[i].id == 0) {
             continue;
@@ -49,7 +49,7 @@ void ::storage::printCnt() {
     fprintf(stdout, "%d  median visits per user\n", visitsCount[visitsCount.size() / 2]);
 
     cnt = 0;
-    size = (sizeof visits) / (sizeof visits[0]);
+    size = visitsArrayLength;
     for (int i = 0; i != size; ++i) {
         if (visits[i].id == 0) {
             continue;

@@ -13,7 +13,7 @@
 
 class Buffer {
 public:
-    static Buffer instance;
+    static Buffer instance[THREADS_COUNT];
 private:
     char *bufToWrite;
 public:

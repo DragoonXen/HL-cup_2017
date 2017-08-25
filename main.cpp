@@ -5,6 +5,8 @@
 #include <fcntl.h>
 #include <sys/epoll.h>
 #include <netinet/tcp.h>
+#include <thread>
+#include <sys/mman.h>
 
 #define MAXEVENTS 512
 #define BUFFERS_COUNT 512
@@ -86,12 +88,35 @@ create_and_bind(char *port) {
     return sfd;
 }
 
-Buffer Buffer::instance;
+
+Buffer Buffer::instance[];
 
 //[BUFFERS_COUNT];
 
 //uint32_t availableBuffers[BUFFERS_COUNT];
 //int currBuffersTop;
+
+void processThread(int epollDescriptor, int idx, epoll_event *events) {
+    Buffer *currentBuffer = Buffer::instance + idx;
+
+    while (1) {
+//        std::cout << "listen to epoll instance " << epollDescriptor << std::endl;
+        int n = epoll_wait(epollDescriptor, events, MAXEVENTS, 0);
+        int i, e;
+        for (i = 0; i < n; i++) {
+            e = events[i].events;
+            if ((e & EPOLLERR) || (e & EPOLLHUP) || (e & EPOLLRDHUP) || (!(e & EPOLLIN) && !(e & EPOLLOUT))) {
+                close(events[i].data.fd); // close connection
+                continue;
+            }
+            if (e & 1) { // ready to read_to_buf
+                currentBuffer->source = events[i].data.fd;
+                currentBuffer->processRequest();
+                Routing::process(currentBuffer);
+            }
+        }
+    }
+}
 
 int main(int argc, char *argv[]) {
 
@@ -101,7 +126,9 @@ int main(int argc, char *argv[]) {
 //    std::cout << ret << std::endl;
 
     std::cout << "start program" << std::endl;
+//    mlockall(MCL_FUTURE | MCL_FUTURE);
     fileReade::readData(argc < 3 ? "/root/" : argv[2]);
+
     int sfd, s;
     int efd;
     struct epoll_event mainEvent;
@@ -154,7 +181,25 @@ int main(int argc, char *argv[]) {
 //        ::Util::copyCharArray(Const::OK_PREPARED, buffers[i].wrBuf);
 //        availableBuffers[currBuffersTop++] = i;
 //    }
-    ::Util::copyCharArray(Const::OK_PREPARED, Buffer::instance.wrBuf);
+    for (int i = 0; i != THREADS_COUNT; ++i) {
+        ::Util::copyCharArray(Const::OK_PREPARED, Buffer::instance[i].wrBuf);
+    }
+    int threadDescriptors[THREADS_COUNT];
+    threadDescriptors[0] = efd;
+    for (int i = 1; i < THREADS_COUNT; ++i) {
+        int threadEfd = epoll_create1(EPOLL_CLOEXEC);
+        std::cout << "epoll instance " << threadEfd << " created" << std::endl;
+        if (threadEfd == -1) {
+            perror("epoll_create");
+            abort();
+        }
+        threadDescriptors[i] = threadEfd;
+        struct epoll_event *threadEvents = (epoll_event *) calloc(MAXEVENTS, sizeof mainEvent);
+        std::cout << "thread " << i << " started" << std::endl;
+        new std::thread(processThread, threadEfd, i, threadEvents);
+//        thread.detach();
+    }
+
 //    for (int i = 0; i != BUFFERS_COUNT; ++i) {
 //        buffers[i].idx = i;
 //        availableBuffers[currBuffersTop++] = i;
@@ -207,7 +252,7 @@ int main(int argc, char *argv[]) {
 //                    *(&events[newEvents].data.u32 + 1) = NO_BUFFER;
                     events[newEvents].events = EPOLLIN | EPOLLHUP | EPOLLRDHUP;
 //                    fprintf(stdout, "%d\n", events[newEvents].events);
-                    s = epoll_ctl(efd, EPOLL_CTL_ADD, infd, &events[newEvents++]);
+                    s = epoll_ctl(threadDescriptors[infd % THREADS_COUNT], EPOLL_CTL_ADD, infd, &events[newEvents++]);
                     if (s == -1) {
                         perror("epoll_ctl");
                         abort();
@@ -229,9 +274,9 @@ int main(int argc, char *argv[]) {
 //                        bufNom = *(&events[i].data.u32 + 1);
 ////                        fprintf(stdout, "source %d use Buffer %d for read\n", events[i].data.fd, bufNom);
 //                    }
-                    Buffer::instance.source = events[i].data.fd;
-                    Buffer::instance.processRequest();
-                    Routing::process(&Buffer::instance);
+                    Buffer::instance->source = events[i].data.fd;
+                    Buffer::instance->processRequest();
+                    Routing::process(Buffer::instance);
 //                    if (!Buffer::instance.complete()) {
 //                        Buffer::instance.writeResponse()
 //                        if (Buffer::instance.closeConnection) {

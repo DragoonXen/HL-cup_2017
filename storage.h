@@ -19,13 +19,13 @@ class Visit;
 class Buffer;
 
 namespace storage {
-    extern User users[];
-    extern Location locations[];
-    extern Visit visits[];
+    extern User *users;
+    extern Location *locations;
+    extern Visit *visits;
 
-    const size_t usersArrayLength = 200 * 1024;
-    const size_t locationsArrayLength = 200 * 1024;
-    const size_t visitsArrayLength = 1024 * 1024 * 2;
+    const size_t usersArrayLength = 200 * 1024 * 10;
+    const size_t locationsArrayLength = 200 * 1024 * 10;
+    const size_t visitsArrayLength = 1024 * 1024 * 2 * 10;
 
     void printCnt();
 };
