@@ -88,8 +88,7 @@ void ::LocationPostHandler::process(Buffer *buffer) {
         Location *location = ::storage::locations + id;
         location->distance = Util::parseUInt(distance);
         location->id = id;
-        Util::unicodeDecode(place, place);
-        location->place = place;
+        Util::unicodeDecode(place, location->place);
         Util::unicodeDecode(city, location->city);
         Util::unicodeDecode(country, location->country);
         location->updateLocationOutput(buffer);
@@ -169,8 +168,8 @@ void ::LocationPostHandler::process(Buffer *buffer) {
             location->distance = Util::parseUInt(distance);
         }
         if (place != 0) {
-            Util::unicodeDecode(place, place);
-            location->place = place;
+            Util::unicodeDecode(place, location->place);
+//            location->place = place;
         }
         if (city != 0) {
             Util::unicodeDecode(city, location->city);

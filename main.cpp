@@ -181,6 +181,7 @@ int main(int argc, char *argv[]) {
 //    }
     for (int i = 0; i != THREADS_COUNT; ++i) {
         ::Util::copyCharArray(Const::OK_PREPARED, Buffer::instance[i].wrBuf);
+        ::Util::copyCharArray(Const::AVG_FORMAT, Buffer::instance[i].avgFormat);
     }
     int threadDescriptors[THREADS_COUNT];
     threadDescriptors[0] = efd;

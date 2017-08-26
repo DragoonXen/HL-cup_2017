@@ -172,7 +172,7 @@ inline void ::UserGetHandler::writeResponse(Buffer *buffer, const std::vector<Vi
 
 inline char *::UserGetHandler::formatVisit(char *buffer, const Visit *visit, char *smallBuf) {
     buffer += ::Util::copyCharArray(VISIT_FORMAT_PLACE, buffer);
-    buffer += ::Util::copyCharArray(::storage::locations[visit->location].place.c_str(), buffer);
+    buffer += ::Util::copyCharArray(::storage::locations[visit->location].place, buffer);
 
     buffer += ::Util::copyCharArray(VISITED_AT, buffer);
     buffer += ::Util::intToStringBytes(visit->visitedAt, buffer, smallBuf);

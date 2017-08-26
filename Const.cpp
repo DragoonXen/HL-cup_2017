@@ -9,6 +9,7 @@ char ::Const::BAD_REQUEST[] = "HTTP/1.1 400 Bad Request\r\nConnection: Keep-Aliv
 char ::Const::POST_OK[] = "HTTP/1.1 200 OK\r\nConnection: Keep-Alive\r\nContent-Length: 2\r\nContent-Type: application/json\r\n\r\n{}";
 char ::Const::OK_PREPARED[] = "HTTP/1.1 200 OK\r\nConnection: Keep-Alive\r\nContent-Type: application/json\r\nContent-Length: ";
 char ::Const::OK_PREPARED_SECOND[] = "\r\n\r\n";
+char ::Const::AVG_FORMAT[] = "HTTP/1.1 200 OK\r\nConnection: Keep-Alive\r\nContent-Type: application/json\r\nContent-Length: 16\r\n\r\n{\"avg\": -.-----}";
 
 long long ::Const::currentTimestamp = 0;
 int ::Const::currentStage = 0;

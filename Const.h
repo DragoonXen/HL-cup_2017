@@ -13,6 +13,7 @@ namespace Const {
     extern char POST_OK[];
     extern char OK_PREPARED[];
     extern char OK_PREPARED_SECOND[];
+    extern char AVG_FORMAT[];
 
     extern long long currentTimestamp;
     extern int currentStage;

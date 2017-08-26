@@ -8,8 +8,8 @@
 namespace LocationGetHandler {
     char EMPTY_AVG[] = "HTTP/1.1 200 OK\r\nConnection: Keep-Alive\r\nContent-Type: application/json\r\nContent-Length: 10\r\n\r\n{\"avg\": 0}";
     const size_t EMPTY_AVG_SZ = sizeof(EMPTY_AVG) / sizeof(char) - 1;
-    char AVG_FORMAT[] = "HTTP/1.1 200 OK\r\nConnection: Keep-Alive\r\nContent-Type: application/json\r\nContent-Length: 16\r\n\r\n{\"avg\": -.-----}";
-    const size_t AVG_FORMAT_SZ = sizeof(AVG_FORMAT) / sizeof(char) - 1;
+//    char AVG_FORMAT[] = "HTTP/1.1 200 OK\r\nConnection: Keep-Alive\r\nContent-Type: application/json\r\nContent-Length: 16\r\n\r\n{\"avg\": -.-----}";
+//    const size_t AVG_FORMAT_SZ = sizeof(AVG_FORMAT) / sizeof(char) - 1;
 
     const long long secShift[] = {0, -31536000, -63158400, -94694400, -126230400, -157766400, -189388800, -220924800, -252460800, -283996800, -315619200,
                                   -347155200, -378691200, -410227200, -441849600, -473385600, -504921600, -536457600, -568080000, -599616000, -631152000,
@@ -224,6 +224,7 @@ void LocationGetHandler::process(Buffer *buffer) {
 }
 
 inline void LocationGetHandler::writeAvgOutput(Buffer *buffer, size_t sum, size_t count) {
+    char *AVG_FORMAT = buffer->avgFormat;
     int result = (int) (sum * 1000000 / count);
     if (result % 10 > 4) {
         result += 10;
@@ -234,8 +235,8 @@ inline void LocationGetHandler::writeAvgOutput(Buffer *buffer, size_t sum, size_
         result /= 10;
     }
     AVG_FORMAT[103] = (char) (result + '0');
-    Util::copyCharArray(AVG_FORMAT, buffer->wrBuf);
-    buffer->writeResponse(buffer->wrBuf, AVG_FORMAT_SZ);
+//    Util::copyCharArray(AVG_FORMAT, buffer->wrBuf);
+    buffer->writeResponse(AVG_FORMAT,  buffer->AVG_FORMAT_SZ);
 }
 
 

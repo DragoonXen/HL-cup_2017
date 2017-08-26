@@ -21,7 +21,7 @@ public:
     size_t getSize;
 
     int id;
-    std::string place;//unlimited
+    char place[101];//unlimited
     char country[101];//50
     char city[101];//50
     int distance;

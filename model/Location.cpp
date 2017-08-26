@@ -5,8 +5,9 @@
 
 Location &Location::operator=(const Location &other) {
     this->id = other.id;
-    this->place = other.place;
+//    this->place = other.place;
     this->distance = other.distance;
+    Util::copyCharArray(other.place, this->place);
     Util::copyCharArray(other.country, this->country);
     Util::copyCharArray(other.city, this->city);
 
@@ -20,7 +21,7 @@ void Location::updateLocationOutput(Buffer *buffer) {
     tempAnsBuffer += ::Util::uintToStringBytes(this->id, tempAnsBuffer, buffer->smallBuf);
 
     tempAnsBuffer += ::Util::copyCharArray(Const::LOCATION_FORMAT_PLACE, tempAnsBuffer);
-    tempAnsBuffer += ::Util::copyCharArray(this->place.c_str(), tempAnsBuffer);
+    tempAnsBuffer += ::Util::copyCharArray(this->place, tempAnsBuffer);
 
     tempAnsBuffer += ::Util::copyCharArray(Const::LOCATION_FORMAT_COUNTRY, tempAnsBuffer);
     tempAnsBuffer += ::Util::copyCharArray(this->country, tempAnsBuffer);

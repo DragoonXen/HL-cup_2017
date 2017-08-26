@@ -71,7 +71,7 @@ void ::fileReade::readLocations(std::stringstream *tokenizer) {
         (*tokenizer) >> token;
         nextString(tokenizer, tmpLocation.city);
         (*tokenizer) >> token;
-        nextString(tokenizer, &tmpLocation.place);
+        nextString(tokenizer, tmpLocation.place);
         (*tokenizer) >> token;
         tmpLocation.id = nextInt(tokenizer);
         (*tokenizer) >> token;
