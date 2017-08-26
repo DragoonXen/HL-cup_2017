@@ -8,19 +8,19 @@
 #include <cstring>
 
 namespace Const {
-    extern char NOT_FOUND[];
-    extern char BAD_REQUEST[];
-    extern char POST_OK[];
-    extern char OK_PREPARED[];
-    extern char OK_PREPARED_SECOND[];
-    extern char AVG_FORMAT[];
+    static constexpr const char *NOT_FOUND = "HTTP/1.1 404 Not Found\r\nConnection: Keep-Alive\r\nContent-Length: 0\r\nContent-Type: application/json\r\n\r\n";
+    static constexpr const char *BAD_REQUEST = "HTTP/1.1 400 Bad Request\r\nConnection: Keep-Alive\r\nContent-Length: 0\r\nContent-Type: application/json\r\n\r\n";
+    static constexpr const char *POST_OK = "HTTP/1.1 200 OK\r\nConnection: Keep-Alive\r\nContent-Length: 2\r\nContent-Type: application/json\r\n\r\n{}";
+    const char OK_PREPARED[] = "HTTP/1.1 200 OK\r\nConnection: Keep-Alive\r\nContent-Type: application/json\r\nContent-Length: ";
+    const char OK_PREPARED_SECOND[] = "\r\n\r\n";
+    const char AVG_FORMAT[] = "HTTP/1.1 200 OK\r\nConnection: Keep-Alive\r\nContent-Type: application/json\r\nContent-Length: 16\r\n\r\n{\"avg\": -.-----}";
 
     extern long long currentTimestamp;
     extern int currentStage;
 
-    extern size_t NOT_FOUND_SZ;
-    extern size_t BAD_REQUEST_SZ;
-    extern size_t POST_OK_SZ;
+    const size_t NOT_FOUND_SZ = sizeof(NOT_FOUND) / sizeof(char) - 1;
+    const size_t BAD_REQUEST_SZ = sizeof(BAD_REQUEST) / sizeof(char) - 1;
+    const size_t POST_OK_SZ = sizeof(POST_OK) / sizeof(char) - 1;
 
     const char LOCATION_FORMAT_ID[] = "{\"id\":";
     const char LOCATION_FORMAT_PLACE[] = ",\"place\":\"";

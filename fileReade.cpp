@@ -9,6 +9,10 @@ size_t::fileReade::maxLengthResponseLocation;
 size_t::fileReade::maxLengthResponseVisit;
 
 void ::fileReade::readData(const char *path) {
+    storage::users = new User[storage::usersArrayLength];
+    storage::locations = new Location[storage::locationsArrayLength];
+    storage::visits = new Visit[storage::visitsArrayLength];
+
     DIR *dir;
     struct dirent *ent;
     std::string dirPath = path;
@@ -74,7 +78,7 @@ void ::fileReade::readLocations(std::stringstream *tokenizer) {
         nextString(tokenizer, tmpLocation.country);
         storage::locations[tmpLocation.id] = tmpLocation;
 
-        storage::locations[tmpLocation.id].updateLocationOutput(Buffer::instance);
+        storage::locations[tmpLocation.id].updateLocationOutput(Buffer::instance->rdBuf, Buffer::instance->smallBuf);
         ::fileReade::maxLengthResponseLocation = std::max(::fileReade::maxLengthResponseLocation, storage::locations[tmpLocation.id].getSize);
     } while (tokenizer->rdbuf()->in_avail());
 }
@@ -98,7 +102,7 @@ void ::fileReade::readUsers(std::stringstream *tokenizer) {
         nextString(tokenizer, tmpUser.email);
         storage::users[tmpUser.id] = tmpUser;
 
-        storage::users[tmpUser.id].updateUserOutput(Buffer::instance);
+        storage::users[tmpUser.id].updateUserOutput(Buffer::instance->rdBuf, Buffer::instance->smallBuf);
         ::fileReade::maxLengthResponseUser = std::max(::fileReade::maxLengthResponseUser, storage::users[tmpUser.id].getSize);
     } while (tokenizer->rdbuf()->in_avail());
 }
@@ -123,7 +127,7 @@ void ::fileReade::readVisits(std::stringstream *tokenizer) {
         storage::locations[tmpVisit.location].visits.push_back(storage::visits + tmpVisit.id);
         storage::users[tmpVisit.user].visits.push_back(storage::visits + tmpVisit.id);
 
-        storage::visits[tmpVisit.id].updateVisitOutput(Buffer::instance);
+        storage::visits[tmpVisit.id].updateVisitOutput(Buffer::instance->rdBuf, Buffer::instance->smallBuf);
         ::fileReade::maxLengthResponseVisit = std::max(::fileReade::maxLengthResponseVisit, storage::visits[tmpVisit.id].getSize);
     } while (tokenizer->rdbuf()->in_avail());
 }

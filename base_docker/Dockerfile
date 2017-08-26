@@ -1,18 +1,20 @@
-FROM centos:7
-WORKDIR /root
-RUN yum -y install unzip
-RUN yum -y install make
-RUN yum -y install centos-release-scl
-RUN yum -y install devtoolset-4-gcc*
-#RUN scl enable devtoolset-4 bash &&\
-#	yum -y install wget &&\
-#	wget https://cmake.org/files/v3.9/cmake-3.9.1.tar.gz &&\
-#	tar -xvzf cmake-3.9.1.tar.gz &&\
-#	cd cmake-3.9.1 &&\
-#	./bootstrap &&\
-#	make &&\
-#	make install
-#RUN yum -y install cmake3
-RUN yum clean all
+from gcc:7.2
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+		bzip2 \
+		unzip \
+		xz-utils \
+	&& rm -rf /var/lib/apt/lists/*
+
+# Default to UTF-8 file.encoding
 ENV LANG C.UTF-8
-EXPOSE 80
+
+# If you're reading this and have any feedback on how this image could be
+# improved, please open an issue or a pull request so we can discuss it!
+#
+#   https://github.com/docker-library/openjdk/issues
+
+RUN apt-get update \
+    && apt-get install --yes cmake
+RUN apt-get clean  \
+    && rm -rf /var/lib/apt/lists/*

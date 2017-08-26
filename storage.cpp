@@ -2,6 +2,7 @@
 // Created by dragoon on 8/20/17.
 //
 
+#include <algorithm>
 #include "storage.h"
 
 User *::storage::users;

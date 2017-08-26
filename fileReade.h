@@ -9,10 +9,10 @@
 #include <dirent.h>
 #include <cstdio>
 #include <cstring>
-#include "model/User.h"
 #include <iostream>
 #include <fstream>
 #include "storage.h"
+#include "Buffer.h"
 
 namespace fileReade {
 

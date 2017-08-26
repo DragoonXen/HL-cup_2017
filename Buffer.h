@@ -8,16 +8,16 @@
 #include <cstdlib>
 #include <unistd.h>
 #include <stdio.h>
-#include "Routing.h"
 #include <iostream>
 #include <sys/uio.h>
+#include "Const.h"
 
 class Buffer {
 public:
     static Buffer instance[THREADS_COUNT];
     static constexpr size_t AVG_FORMAT_SZ = 111;
 private:
-    char *bufToWrite;
+    const char *bufToWrite;
 public:
     ssize_t readCount = 0;
     char avgFormat[AVG_FORMAT_SZ + 1]; // zero char

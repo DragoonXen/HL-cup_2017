@@ -1,5 +1,5 @@
-#include "Buffer.h"
 #include "fileReade.h"
+#include "Routing.h"
 #include <sys/socket.h>
 #include <netdb.h>
 #include <fcntl.h>
@@ -102,7 +102,6 @@ create_and_bind(char *port) {
     return sfd;
 }
 
-
 Buffer Buffer::instance[];
 
 //[BUFFERS_COUNT];
@@ -133,9 +132,6 @@ void processThread(int epollDescriptor, int idx, epoll_event *events) {
 }
 
 int main(int argc, char *argv[]) {
-    storage::users = new User[storage::usersArrayLength];
-    storage::locations = new Location[storage::locationsArrayLength];
-    storage::visits = new Visit[storage::visitsArrayLength];
 
 //    int which = PRIO_PROCESS;
 //    int ret;
