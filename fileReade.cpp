@@ -9,10 +9,6 @@ size_t::fileReade::maxLengthResponseLocation;
 size_t::fileReade::maxLengthResponseVisit;
 
 void ::fileReade::readData(const char *path) {
-    storage::users = new User[storage::usersArrayLength];
-    storage::locations = new Location[storage::locationsArrayLength];
-    storage::visits = new Visit[storage::visitsArrayLength];
-
     DIR *dir;
     struct dirent *ent;
     std::string dirPath = path;

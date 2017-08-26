@@ -10,14 +10,30 @@
 
 #define MAXEVENTS 64
 
+constexpr int recvBuf = 1024 * 4;
+constexpr int sendBuf = 1024 * 16;
+
 static int make_socket_nodelay(int sfd) {
     int flags;
 
     flags = 1;
-    int s = setsockopt(sfd, IPPROTO_TCP, TCP_NODELAY, (char *) &flags, sizeof(int));
-//    setsockopt(sfd, IPPROTO_TCP, TCP_QUICKACK, (char *) &flags, sizeof(int));
-    setsockopt(sfd, SOL_SOCKET, SO_DONTROUTE, (char *) &flags, sizeof(int));
-    if (s < 0) {
+    if (setsockopt(sfd, IPPROTO_TCP, TCP_NODELAY, (char *) &flags, sizeof(int)) < 0) {
+        perror("setsockopt");
+        return -1;
+    }
+    if (setsockopt(sfd, IPPROTO_TCP, TCP_QUICKACK, (char *) &flags, sizeof(int)) < 0) {
+        perror("setsockopt");
+        return -1;
+    }
+    if (setsockopt(sfd, SOL_SOCKET, SO_DONTROUTE, (char *) &flags, sizeof(int)) < 0) {
+        perror("setsockopt");
+        return -1;
+    }
+    if (setsockopt(sfd, SOL_SOCKET, SO_SNDBUF, &sendBuf, sizeof(sendBuf)) < 0) {
+        perror("setsockopt");
+        return -1;
+    }
+    if (setsockopt(sfd, SOL_SOCKET, SO_RCVBUF, &recvBuf, sizeof(recvBuf)) < 0) {
         perror("setsockopt");
         return -1;
     }
@@ -117,6 +133,9 @@ void processThread(int epollDescriptor, int idx, epoll_event *events) {
 }
 
 int main(int argc, char *argv[]) {
+    storage::users = new User[storage::usersArrayLength];
+    storage::locations = new Location[storage::locationsArrayLength];
+    storage::visits = new Visit[storage::visitsArrayLength];
 
 //    int which = PRIO_PROCESS;
 //    int ret;
@@ -124,7 +143,7 @@ int main(int argc, char *argv[]) {
 //    std::cout << ret << std::endl;
 
     std::cout << "start program" << std::endl;
-//    mlockall(MCL_FUTURE | MCL_FUTURE);
+    mlockall(MCL_CURRENT | MCL_FUTURE);
     fileReade::readData(argc < 3 ? "/root/" : argv[2]);
 
     int sfd, s;
@@ -210,18 +229,9 @@ int main(int argc, char *argv[]) {
 
         n = epoll_wait(efd, events, MAXEVENTS, 0);
         int e;
-//        fprintf(stdout, "%d events received\n", n);
         for (i = 0; i != n; i++) {
             e = events[i].events;
-//            fprintf(stdout, "event %d, id %d\n", e, events[i].data.fd);
             if ((e & EPOLLERR) || (e & EPOLLHUP) || (e & EPOLLRDHUP) || (!(e & EPOLLIN) && !(e & EPOLLOUT))) {
-//                if (*(&events[i].data.u32 + 1) & ~NO_BUFFER) { //unfortenatly error caused, but buffer used
-//                    uint32_t bufNom = *(&events[i].data.u32 + 1);
-//                    availableBuffers[currBuffersTop++] = bufNom;
-//                    *(&events[i].data.u32 + 1) = NO_BUFFER;
-//                    fprintf(stdout, "closeConnection while buffer %d in use %d\n", bufNom, events[i].data.fd);
-//                }
-//                std::cout << "close connection by event" << std::endl;
                 close(events[i].data.fd); // close connection
                 continue;
             }
@@ -234,15 +244,15 @@ int main(int argc, char *argv[]) {
                 while (1) {
                     infd = accept4(sfd, &in_addr, &in_len, SOCK_NONBLOCK);
                     if (infd == -1) {
-                        if ((errno == EAGAIN) ||
-                            (errno == EWOULDBLOCK)) {
-                            /* We have processed all incoming
-                               connections. */
+//                        if ((errno == EAGAIN) ||
+//                            (errno == EWOULDBLOCK)) {
+//                            /* We have processed all incoming
+//                               connections. */
+//                            break;
+//                        } else {
+//                            perror("accept");
                             break;
-                        } else {
-                            perror("accept");
-                            break;
-                        }
+//                        }
                     }
 //                    fprintf(stdout, "connection %d\n", infd);
                     make_socket_nodelay(infd);

@@ -55,12 +55,11 @@ namespace Util {
     inline int tryParsePositiveIntPath(char *buf) {
         int val = 0;
         do {
-            val *= 10;
             int newVal = *buf - '0';
             if (newVal < 0 || newVal > 9) {
                 return INT_MIN;
             }
-            val += newVal;
+            val = val * 10 + newVal;
         } while (*(++buf) > 47);
         return val;
     }
@@ -68,12 +67,11 @@ namespace Util {
     inline int tryParsePositiveIntPostPath(char *buf) {
         int val = 0;
         do {
-            val *= 10;
             int newVal = *buf - '0';
             if (newVal < 0 || newVal > 9) {
                 return INT_MIN;
             }
-            val += newVal;
+            val = val * 10 + newVal;
         } while (*(++buf) != '?');
         return val;
     }
@@ -163,12 +161,11 @@ namespace Util {
         int val = 0;
 
         do {
-            val *= 10;
             int newVal = *integer - '0';
             if (newVal < 0 || newVal > 9) {
                 return INT_MIN;
             }
-            val += newVal;
+            val = val * 10 + newVal;
         } while (*(++integer) != 0);
         return val;
     }
@@ -182,12 +179,11 @@ namespace Util {
         }
 
         do {
-            val *= 10;
             int newVal = *integer - '0';
             if (newVal < 0 || newVal > 9) {
                 return INT_MIN;
             }
-            val += newVal;
+            val = val * 10 + newVal;
         } while (*(++integer) != 0);
         return neg ? -val : val;
     }
@@ -201,8 +197,7 @@ namespace Util {
         }
 
         do {
-            val *= 10;
-            val += *integer - '0';
+            val = val * 10 + *integer - '0';
         } while (*(++integer) != 0);
         return neg ? -val : val;
     }
@@ -211,8 +206,7 @@ namespace Util {
         int val = 0;
 
         do {
-            val *= 10;
-            val += *integer - '0';
+            val = val * 10 + *integer - '0';
         } while (*(++integer) != 0);
         return val;
     }
