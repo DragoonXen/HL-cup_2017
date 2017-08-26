@@ -39,6 +39,7 @@ void ::fileReade::readData(const char *path) {
                         readVisits(&lineStream);
                         break;
                 }
+                lineStream.clear();
             } else if (!strcmp(ent->d_name, "options.txt")) {
                 std::ifstream myfile(dirPath + '/' + ent->d_name);
                 std::string str;

@@ -14,8 +14,12 @@
 class Buffer;
 
 class User {
-    static const int MAX_BUF_SIZE = 599;
+    static const int MAX_BUF_SIZE = 400;
+
 public:
+    char getBuffer[MAX_BUF_SIZE];
+    size_t getSize;
+
     int id;
     char email[201]; // 100 symb
     char firstName[101]; // 50 chars
@@ -23,9 +27,6 @@ public:
     char male;
     int birthDate;
     std::vector<Visit *> visits;
-
-    char getBuffer[MAX_BUF_SIZE];
-    size_t getSize;
 
     void updateUserOutput(Buffer *buffer);
 

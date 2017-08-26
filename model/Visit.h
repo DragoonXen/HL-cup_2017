@@ -13,14 +13,14 @@ class Buffer;
 class Visit {
     static const int MAX_BUF_SIZE = 189;
 public:
+    char getBuffer[MAX_BUF_SIZE];
+    size_t getSize;
+
     int id;
     int location;
     int user;
     int visitedAt;
     int mark;
-
-    char getBuffer[MAX_BUF_SIZE];
-    size_t getSize;
 
     void updateVisitOutput(Buffer *buffer);
 };

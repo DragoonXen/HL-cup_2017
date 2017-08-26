@@ -15,17 +15,17 @@ class Visit;
 class Buffer;
 
 class Location {
-    static const int MAX_BUF_SIZE = 575;
+    static const int MAX_BUF_SIZE = 400;
 public:
+    char getBuffer[MAX_BUF_SIZE];
+    size_t getSize;
+
     int id;
     std::string place;//unlimited
     char country[101];//50
     char city[101];//50
     int distance;
     std::vector<Visit *> visits;
-
-    char getBuffer[MAX_BUF_SIZE];
-    size_t getSize;
 
     void updateLocationOutput(Buffer *buffer);
 

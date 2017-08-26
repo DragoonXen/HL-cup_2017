@@ -9,9 +9,9 @@ EXPOSE 80
 CMD date && \
 	unzip -j /tmp/data/data.zip '*.json' -d /root > /dev/null &&\
 	cp /tmp/data/options.txt /root &&\	
-	echo 'cmake...' &&\
+	echo 'run cmake' &&\
 	cmake . > /dev/null &&\
-    echo 'make...' &&\
+    echo 'run make' &&\
     make > /dev/null &&\
     echo 'Done.' &&\
     date && \

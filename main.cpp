@@ -8,16 +8,14 @@
 #include <thread>
 #include <sys/mman.h>
 
-#define MAXEVENTS 512
-#define BUFFERS_COUNT 512
-#define NO_BUFFER 1024
+#define MAXEVENTS 64
 
 static int make_socket_nodelay(int sfd) {
     int flags;
 
     flags = 1;
     int s = setsockopt(sfd, IPPROTO_TCP, TCP_NODELAY, (char *) &flags, sizeof(int));
-    setsockopt(sfd, IPPROTO_TCP, TCP_QUICKACK, (char *) &flags, sizeof(int));
+//    setsockopt(sfd, IPPROTO_TCP, TCP_QUICKACK, (char *) &flags, sizeof(int));
     setsockopt(sfd, SOL_SOCKET, SO_DONTROUTE, (char *) &flags, sizeof(int));
     if (s < 0) {
         perror("setsockopt");
@@ -54,7 +52,7 @@ create_and_bind(char *port) {
     int s, sfd;
 
     memset(&hints, 0, sizeof(struct addrinfo));
-    hints.ai_family = PF_INET;     /* Return IPv4 and IPv6 choices */
+    hints.ai_family = PF_UNSPEC;     /* Return IPv4 and IPv6 choices */
     hints.ai_socktype = SOCK_STREAM; /* We want a TCP socket */
     hints.ai_flags = AI_PASSIVE;     /* All interfaces */
 
@@ -212,7 +210,7 @@ int main(int argc, char *argv[]) {
         n = epoll_wait(efd, events, MAXEVENTS, 0);
         int e;
 //        fprintf(stdout, "%d events received\n", n);
-        for (i = 0; i < n; i++) {
+        for (i = 0; i != n; i++) {
             e = events[i].events;
 //            fprintf(stdout, "event %d, id %d\n", e, events[i].data.fd);
             if ((e & EPOLLERR) || (e & EPOLLHUP) || (e & EPOLLRDHUP) || (!(e & EPOLLIN) && !(e & EPOLLOUT))) {

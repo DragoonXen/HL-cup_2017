@@ -8,27 +8,21 @@ void Routing::process(Buffer *buf) {
 //    buf->writeNotFound();
     if (buffer[0] == 'G') {
         buf->closeConnection = false;
-        switch (buffer[5]) {
-            case 117://users
-                UserGetHandler::process(buf);
-                break;
-            case 108:
-                LocationGetHandler::process(buf);
-                break;
-            default:
-                VisitGetHandler::process(buf);
+        if (buffer[5] == 117) {
+            UserGetHandler::process(buf);
+        } else if (buffer[5] == 108) {
+            LocationGetHandler::process(buf);
+        } else {
+            VisitGetHandler::process(buf);
         }
     } else {
         buf->closeConnection = true;
-        switch (buffer[6]) {
-            case 117://users
-                UserPostHandler::process(buf);
-                break;
-            case 118://visits
-                VisitPostHandler::process(buf);
-                break;
-            default://locations 108
-                LocationPostHandler::process(buf);
+        if (buffer[6] == 117) {
+            UserPostHandler::process(buf);
+        } else if (buffer[6] == 118) {
+            VisitPostHandler::process(buf);
+        } else {
+            LocationPostHandler::process(buf);
         }
     }
 }
