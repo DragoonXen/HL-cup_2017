@@ -26,6 +26,7 @@ public:
     size_t writePos = 0;
     char wrBuf[16 * 1024];
     char smallBuf[64];
+    char* pathBuf[20];
     int source = 0;
     bool closeConnection;
 

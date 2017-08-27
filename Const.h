@@ -18,6 +18,7 @@ namespace Const {
     extern long long currentTimestamp;
     extern int currentStage;
 
+    const size_t OK_PREPARED_SZ = sizeof(OK_PREPARED) / sizeof(char) - 1;
     const size_t NOT_FOUND_SZ = 101;
     const size_t BAD_REQUEST_SZ = 103;
     const size_t POST_OK_SZ = 96;

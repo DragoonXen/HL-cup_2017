@@ -82,17 +82,16 @@ namespace LocationGetHandler {
 //                    std::cout << "birth date " << user->birthDate << ", visitTime " << visit->visitedAt << ", mark " << visit->mark << std::endl;
 //                }
 //            }
-                std::vector<char *> query;
-                ::Util::parseQuery(lastPathChr, query);
                 char male = 0;
                 int fromDate = INT_MIN;
                 int toDate = INT_MIN;
                 int fromAge = INT_MIN;
                 int toAge = INT_MIN;
-                for (int i = 0; i != query.size(); i += 2) {
-                    switch (query[i][2]) {
+                int cnt = ::Util::parseQuery(lastPathChr, buffer->pathBuf);
+                for (int i = 0; i != cnt; i += 2) {
+                    switch (buffer->pathBuf[i][2]) {
                         case 'n'://gender
-                            switch (query[i + 1][0]) {
+                            switch (buffer->pathBuf[i + 1][0]) {
                                 case 'm':
                                     male = 'm';
                                     break;
@@ -103,22 +102,22 @@ namespace LocationGetHandler {
                                     buffer->writeBadRequest();
                                     return;
                             }
-                            if (query[i + 1][1] != 0) {
+                            if (buffer->pathBuf[i + 1][1] != 0) {
                                 buffer->writeBadRequest();
                                 return;
                             }
                             break;
                         case 'o': // fromAge and fromDate
-                            switch (query[i][4]) {
+                            switch (buffer->pathBuf[i][4]) { //
                                 case 'A':// fromAge
-                                    fromAge = ::Util::tryParsePositiveInt(query[i + 1]);
+                                    fromAge = ::Util::tryParsePositiveInt(buffer->pathBuf[i + 1]);
                                     if (fromAge == INT_MIN) {
                                         buffer->writeBadRequest();
                                         return;
                                     }
                                     break;
                                 default:// fromDate
-                                    fromDate = ::Util::tryParseInt(query[i + 1]);
+                                    fromDate = ::Util::tryParseInt(buffer->pathBuf[i + 1]);
                                     if (fromDate == INT_MIN) {
                                         buffer->writeBadRequest();
                                         return;
@@ -127,14 +126,14 @@ namespace LocationGetHandler {
                             }
                             break;
                         case 'D'://toDate
-                            toDate = ::Util::tryParseInt(query[i + 1]);
+                            toDate = ::Util::tryParseInt(buffer->pathBuf[i + 1]);
                             if (toDate == INT_MIN) {
                                 buffer->writeBadRequest();
                                 return;
                             }
                             break;
                         default://toAge
-                            toAge = ::Util::tryParsePositiveInt(query[i + 1]);
+                            toAge = ::Util::tryParsePositiveInt(buffer->pathBuf[i + 1]);
                             if (toAge == INT_MIN) {
                                 buffer->writeBadRequest();
                                 return;

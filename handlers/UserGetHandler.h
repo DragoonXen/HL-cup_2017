@@ -48,8 +48,8 @@ namespace UserGetHandler {
 //    *tempAnsBuffer = 0;
 //    buffer->writeResponse(buffer->rdBuf, )
 
-        char *writeBuf = buffer->wrBuf;
-        writeBuf += ::Util::copyCharArray(Const::OK_PREPARED, writeBuf);
+        char *writeBuf = buffer->wrBuf + Const::OK_PREPARED_SZ;
+//        writeBuf += ::Util::copyCharArray(Const::OK_PREPARED, writeBuf);
         writeBuf += ::Util::uintToStringBytes((int) (tempAnsBuffer - buffer->rdBuf), writeBuf, buffer->smallBuf);
         writeBuf += ::Util::copyCharArray(Const::OK_PREPARED_SECOND, writeBuf);
         buffer->writeResponse(buffer->wrBuf, writeBuf - buffer->wrBuf, buffer->rdBuf, tempAnsBuffer - buffer->rdBuf);
@@ -80,33 +80,32 @@ namespace UserGetHandler {
                 int toDate = INT_MIN;
                 int fromDate = INT_MIN;
                 char *country = 0;
-                std::vector<char *> query;
-                ::Util::parseQuery(lastPathChr, query);
-                for (int i = 0; i != query.size(); i += 2) {
-                    switch (query[i][3]) {
-                        case 'i':
-                            toDistance = ::Util::tryParsePositiveInt(query[i + 1]);
+                int cnt = ::Util::parseQuery(lastPathChr, buffer->pathBuf);
+                for (int i = 0; i != cnt; i += 2) {
+                    switch (buffer->pathBuf[i][3]) {
+                        case 'i'://1766092660
+                            toDistance = ::Util::tryParsePositiveInt(buffer->pathBuf[i + 1]);
                             if (toDistance == INT_MIN) {
                                 buffer->writeBadRequest();
                                 return;
                             }
                             break;
-                        case 'a':
-                            toDate = ::Util::tryParsePositiveInt(query[i + 1]);
+                        case 'a'://1631874932
+                            toDate = ::Util::tryParsePositiveInt(buffer->pathBuf[i + 1]);
                             if (toDate == INT_MIN) {
                                 buffer->writeBadRequest();
                                 return;
                             }
                             break;
-                        case 'm':
-                            fromDate = ::Util::tryParsePositiveInt(query[i + 1]);
+                        case 'm'://1836020326
+                            fromDate = ::Util::tryParsePositiveInt(buffer->pathBuf[i + 1]);
                             if (fromDate == INT_MIN) {
                                 buffer->writeBadRequest();
                                 return;
                             }
                             break;
-                        default:
-                            country = query[i + 1];
+                        default: //1853189987
+                            country = buffer->pathBuf[i + 1];
                     }
                 }
                 if (user->visits.empty()) {

@@ -83,16 +83,20 @@ namespace Util {
         return buf;
     }
 
-    inline void parseQuery(char *buf, std::vector<char *> &vc) {
-        vc.push_back(buf);
+    inline int parseQuery(char *buf, char **dest) {
+        *dest++ = buf;
+        int cnt = 1;
         do {
             ++buf;
             if (*buf == '&' || *buf == '=') {
                 *buf = 0;
-                vc.push_back(buf + 1);
+                ++cnt;
+                *dest++ = buf + 1;
+                buf++;
             }
         } while (*buf != ' ');
         *buf = 0;
+        return cnt;
     }
 
 //    inline void splitQuery(char *buf) {
