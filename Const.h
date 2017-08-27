@@ -18,9 +18,9 @@ namespace Const {
     extern long long currentTimestamp;
     extern int currentStage;
 
-    const size_t NOT_FOUND_SZ = sizeof(NOT_FOUND) / sizeof(char) - 1;
-    const size_t BAD_REQUEST_SZ = sizeof(BAD_REQUEST) / sizeof(char) - 1;
-    const size_t POST_OK_SZ = sizeof(POST_OK) / sizeof(char) - 1;
+    const size_t NOT_FOUND_SZ = 101;
+    const size_t BAD_REQUEST_SZ = 103;
+    const size_t POST_OK_SZ = 96;
 
     const char LOCATION_FORMAT_ID[] = "{\"id\":";
     const char LOCATION_FORMAT_PLACE[] = ",\"place\":\"";
