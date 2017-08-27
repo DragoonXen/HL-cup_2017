@@ -8,10 +8,11 @@
 #include <thread>
 #include <sys/mman.h>
 
-#define MAXEVENTS 64
+#define MAXEVENTS 32
 
-constexpr int recvBuf = 1024 * 4;
-constexpr int sendBuf = 1024 * 16;
+//constexpr int recvBuf = 1024 * 4;
+//constexpr int sendBuf = 1024 * 16;
+#define BUF_COUNT 128
 
 static int make_socket_nodelay(int sfd) {
     int flags;
@@ -25,18 +26,18 @@ static int make_socket_nodelay(int sfd) {
         perror("setsockopt");
         return -1;
     }
-    if (setsockopt(sfd, SOL_SOCKET, SO_DONTROUTE, (char *) &flags, sizeof(int)) < 0) {
-        perror("setsockopt");
-        return -1;
-    }
-    if (setsockopt(sfd, SOL_SOCKET, SO_SNDBUF, &sendBuf, sizeof(sendBuf)) < 0) {
-        perror("setsockopt");
-        return -1;
-    }
-    if (setsockopt(sfd, SOL_SOCKET, SO_RCVBUF, &recvBuf, sizeof(recvBuf)) < 0) {
-        perror("setsockopt");
-        return -1;
-    }
+//    if (setsockopt(sfd, SOL_SOCKET, SO_DONTROUTE, (char *) &flags, sizeof(int)) < 0) {
+//        perror("setsockopt");
+//        return -1;
+//    }
+//    if (setsockopt(sfd, SOL_SOCKET, SO_SNDBUF, &sendBuf, sizeof(sendBuf)) < 0) {
+//        perror("setsockopt");
+//        return -1;
+//    }
+//    if (setsockopt(sfd, SOL_SOCKET, SO_RCVBUF, &recvBuf, sizeof(recvBuf)) < 0) {
+//        perror("setsockopt");
+//        return -1;
+//    }
 
     return 0;
 }
@@ -61,8 +62,7 @@ make_socket_non_blocking(int sfd) {
     return 0;
 }
 
-static int
-create_and_bind(char *port) {
+static int create_and_bind(char *port) {
     struct addrinfo hints;
     struct addrinfo *result, *rp;
     int s, sfd;
@@ -102,33 +102,72 @@ create_and_bind(char *port) {
     return sfd;
 }
 
-Buffer Buffer::instance[];
-
 //[BUFFERS_COUNT];
 
 //uint32_t availableBuffers[BUFFERS_COUNT];
 //int currBuffersTop;
 
 void processThread(int epollDescriptor, int idx, epoll_event *events) {
-    Buffer *currentBuffer = Buffer::instance + idx;
 
+    Buffer buffers[BUF_COUNT];
+    uint32_t availableBuffers[BUF_COUNT];
+    int currBuffersTop = 0;
+    for (uint32_t i = 0; i != BUF_COUNT; ++i) {
+        availableBuffers[currBuffersTop++] = i;
+        ::Util::copyCharArray(Const::OK_PREPARED, buffers[i].wrBuf);
+        ::Util::copyCharArray(Const::AVG_FORMAT, buffers[i].avgFormat);
+    }
+
+    /* The event loop */
     while (1) {
-//        std::cout << "listen to epoll instance " << epollDescriptor << std::endl;
-        int n = epoll_wait(epollDescriptor, events, MAXEVENTS, 0);
-        int i, e;
-        for (i = 0; i < n; i++) {
+        int n, i;
+
+        n = epoll_wait(epollDescriptor, events, MAXEVENTS, 0);
+        int e;
+        for (i = n - 1; i >= 0; --i) {
             e = events[i].events;
             if ((e & EPOLLERR) || (e & EPOLLHUP) || (e & EPOLLRDHUP) || (!(e & EPOLLIN) && !(e & EPOLLOUT))) {
+//                std::cout << e << " thread " << idx << " close " << events[i].data.fd << std::endl;
                 close(events[i].data.fd); // close connection
                 continue;
             }
-            if (e & 1) { // ready to read_to_buf
-                currentBuffer->source = events[i].data.fd;
-                currentBuffer->processRequest();
-                Routing::process(currentBuffer);
+//            std::cout << "thread " << idx << " read " << events[i].data.fd << std::endl;
+            if (e & 1) {
+                //                    std::cout << "main thread read " << events[i].data.fd << std::endl;
+                uint32_t bufNom = availableBuffers[--currBuffersTop];
+                if (currBuffersTop == -1) {
+                    std::cout << "alert! negative buffer!" << std::endl;
+                }
+                *(&events[i].data.u32 + 1) = bufNom;
+                buffers[bufNom].source = events[i].data.fd;
+                buffers[bufNom].readSource();
+                Routing::process(buffers + bufNom);
+                events[i].events = EPOLLOUT | EPOLLHUP | EPOLLRDHUP;
+                epoll_ctl(epollDescriptor, EPOLL_CTL_MOD, events[i].data.fd, events + i);
+//                if (s == -1) {
+//                    perror("epoll_ctl");
+//                    abort();
+//                }
+            } else if (e & 4) { // ready to read_to_buf
+//                std::cout << "main thread write " << events[i].data.fd << std::endl;
+                uint32_t bufNom = *(&events[i].data.u32 + 1);
+                buffers[bufNom].writeResponse();
+                availableBuffers[currBuffersTop++] = bufNom;
+//                *(&events[i].data.u32 + 1) = NO_BUFFER;
+                if (buffers[bufNom].closeConnection) {
+                    close(events[i].data.fd);
+                } else { // keep alive, wait for response
+                    events[i].events = EPOLLIN | EPOLLHUP | EPOLLRDHUP;
+                    epoll_ctl(epollDescriptor, EPOLL_CTL_MOD, events[i].data.fd, events + i);
+//                    if (s == -1) {
+//                        perror("epoll_ctl");
+//                        abort();
+//                    }
+                }
             }
         }
     }
+
 }
 
 int main(int argc, char *argv[]) {
@@ -180,24 +219,7 @@ int main(int argc, char *argv[]) {
         abort();
     }
 
-    /* Buffer where events are returned */
     events = (epoll_event *) calloc(MAXEVENTS, sizeof mainEvent);
-//    char answer[] = "HTTP/1.1 404 Not Found\r\nConnection: Keep-Alive\r\nContent-Length: 0\r\nContent-Type: application/json\r\n\r\n";
-//    char answer[] = "HTTP/1.1 200 OK\r\nConnection: keep-alive\r\nContent-Length: 2\r\nServer: Custom\r\nContent-Type: application/json\r\n\r\n{}\r\n";
-//    int error;
-//    socklen_t errlen;
-
-    // init buffers
-//    currBuffersTop = 0;
-//    for (int i = BUFFERS_COUNT - 1; i >= 0; --i) {
-//        buffers[i].idx = i;
-//        ::Util::copyCharArray(Const::OK_PREPARED, buffers[i].wrBuf);
-//        availableBuffers[currBuffersTop++] = i;
-//    }
-    for (int i = 0; i != THREADS_COUNT; ++i) {
-        ::Util::copyCharArray(Const::OK_PREPARED, Buffer::instance[i].wrBuf);
-        ::Util::copyCharArray(Const::AVG_FORMAT, Buffer::instance[i].avgFormat);
-    }
     int threadDescriptors[THREADS_COUNT];
     threadDescriptors[0] = efd;
     for (int i = 1; i < THREADS_COUNT; ++i) {
@@ -211,13 +233,17 @@ int main(int argc, char *argv[]) {
         struct epoll_event *threadEvents = (epoll_event *) calloc(MAXEVENTS, sizeof mainEvent);
         std::cout << "thread " << i << " started" << std::endl;
         new std::thread(processThread, threadEfd, i, threadEvents);
-//        thread.detach();
     }
 
-//    for (int i = 0; i != BUFFERS_COUNT; ++i) {
-//        buffers[i].idx = i;
-//        availableBuffers[currBuffersTop++] = i;
-//    }
+    Buffer buffers[BUF_COUNT];
+
+    uint32_t availableBuffers[BUF_COUNT];
+    int currBuffersTop = 0;
+    for (uint32_t i = 0; i != BUF_COUNT; ++i) {
+        availableBuffers[currBuffersTop++] = i;
+        ::Util::copyCharArray(Const::OK_PREPARED, buffers[i].wrBuf);
+        ::Util::copyCharArray(Const::AVG_FORMAT, buffers[i].avgFormat);
+    }
 
     /* The event loop */
     while (1) {
@@ -225,9 +251,10 @@ int main(int argc, char *argv[]) {
 
         n = epoll_wait(efd, events, MAXEVENTS, 0);
         int e;
-        for (i = 0; i != n; i++) {
+        for (i = n - 1; i >= 0; --i) {
             e = events[i].events;
             if ((e & EPOLLERR) || (e & EPOLLHUP) || (e & EPOLLRDHUP) || (!(e & EPOLLIN) && !(e & EPOLLOUT))) {
+//                std::cout << e << " main thread close " << events[i].data.fd << std::endl;
                 close(events[i].data.fd); // close connection
                 continue;
             }
@@ -247,72 +274,54 @@ int main(int argc, char *argv[]) {
 //                            break;
 //                        } else {
 //                            perror("accept");
-                            break;
+                        break;
 //                        }
                     }
-//                    fprintf(stdout, "connection %d\n", infd);
                     make_socket_nodelay(infd);
 
                     events[newEvents].data.fd = infd;
 //                    *(&events[newEvents].data.u32 + 1) = NO_BUFFER;
                     events[newEvents].events = EPOLLIN | EPOLLHUP | EPOLLRDHUP;
-//                    fprintf(stdout, "%d\n", events[newEvents].events);
-                    s = epoll_ctl(threadDescriptors[infd % THREADS_COUNT], EPOLL_CTL_ADD, infd, &events[newEvents++]);
-                    if (s == -1) {
-                        perror("epoll_ctl");
-                        abort();
-                    }
+                    epoll_ctl(threadDescriptors[infd % THREADS_COUNT], EPOLL_CTL_ADD, infd, &events[newEvents++]);
+//                    if (s == -1) {
+//                        perror("epoll_ctl");
+//                        abort();
+//                    }
                 }
                 // new connection here
             } else {
-                if (e & 1) { // ready to read_to_buf
-//                    int count = read(events[i].data.fd, readBuf, sizeof readBuf);
-//                    uint32_t bufNom;
-//                    if (*(&events[i].data.u32 + 1) & NO_BUFFER) {
-//                        // receive Buffer for request processing
-//                        bufNom = availableBuffers[--currBuffersTop];
-//                        *(&events[i].data.u32 + 1) = bufNom;
-//                        buffers[bufNom].source = events[i].data.fd;
-////                        buffers[bufNom].closeConnection = true;
-////                        fprintf(stdout, "source %d use Buffer %d for read\n", events[i].data.fd, bufNom);
-//                    } else {
-//                        bufNom = *(&events[i].data.u32 + 1);
-////                        fprintf(stdout, "source %d use Buffer %d for read\n", events[i].data.fd, bufNom);
-//                    }
-                    Buffer::instance->source = events[i].data.fd;
-                    Buffer::instance->processRequest();
-                    Routing::process(Buffer::instance);
-//                    if (!Buffer::instance.complete()) {
-//                        Buffer::instance.writeResponse()
-//                        if (Buffer::instance.closeConnection) {
-//                            close(events[i].data.fd);
-//                        } else { // keep alive, wait for response
-//                            events[i].events = EPOLLIN | EPOLLHUP | EPOLLRDHUP;
-//                            s = epoll_ctl(efd, EPOLL_CTL_MOD, events[i].data.fd, events + i);
-//                            if (s == -1) {
-//                                perror("epoll_ctl");
-//                                abort();
-//                            }
-//                        }
-//                    }
-//                    if (count == -1) {
-//                        if (errno != EAGAIN) {
-//                            perror("read_to_buf");
-//                            close(events[i].data.fd); // close connection
-//                        }
-//                        break;
-//                    } else if (count == 0) {
-//                        /* End of file. The remote has closed the
-//                           connection. */
-//                        close(events[i].data.fd); // close connection
-//                        break;
-//                    }
-                    /* Write the Buffer to standard output */
-//                    s = write(1, readBuf, count);
+                if (e & 1) {
+                    //                    std::cout << "main thread read " << events[i].data.fd << std::endl;
+                    uint32_t bufNom = availableBuffers[--currBuffersTop];
+                    if (currBuffersTop == -1) {
+                        std::cout << "alert! negative buffer!" << std::endl;
+                    }
+                    *(&events[i].data.u32 + 1) = bufNom;
+                    buffers[bufNom].source = events[i].data.fd;
+                    buffers[bufNom].readSource();
+                    Routing::process(buffers + bufNom);
+                    events[i].events = EPOLLOUT | EPOLLHUP | EPOLLRDHUP;
+                    epoll_ctl(efd, EPOLL_CTL_MOD, events[i].data.fd, events + i);
 //                    if (s == -1) {
-//                        perror("write");
+//                        perror("epoll_ctl");
 //                        abort();
 //                    }
+                } else if (e & 4) { // ready to read_to_buf
+//                std::cout << "main thread write " << events[i].data.fd << std::endl;
+                    uint32_t bufNom = *(&events[i].data.u32 + 1);
+                    buffers[bufNom].writeResponse();
+                    availableBuffers[currBuffersTop++] = bufNom;
+//                *(&events[i].data.u32 + 1) = NO_BUFFER;
+                    if (buffers[bufNom].closeConnection) {
+                        close(events[i].data.fd);
+                    } else { // keep alive, wait for response
+                        events[i].events = EPOLLIN | EPOLLHUP | EPOLLRDHUP;
+                        epoll_ctl(efd, EPOLL_CTL_MOD, events[i].data.fd, events + i);
+//                    if (s == -1) {
+//                        perror("epoll_ctl");
+//                        abort();
+//                    }
+                    }
                 }
             }
         }

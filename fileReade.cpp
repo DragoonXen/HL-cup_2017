@@ -65,6 +65,7 @@ void ::fileReade::readData(const char *path) {
 void ::fileReade::readLocations(std::stringstream *tokenizer) {
     Location tmpLocation;
     std::string token;
+    Buffer buf;
     do {
         (*tokenizer) >> token;
         tmpLocation.distance = nextInt(tokenizer);
@@ -78,7 +79,7 @@ void ::fileReade::readLocations(std::stringstream *tokenizer) {
         nextString(tokenizer, tmpLocation.country);
         storage::locations[tmpLocation.id] = tmpLocation;
 
-        storage::locations[tmpLocation.id].updateLocationOutput(Buffer::instance->rdBuf, Buffer::instance->smallBuf);
+        storage::locations[tmpLocation.id].updateLocationOutput(buf.rdBuf, buf.smallBuf);
         ::fileReade::maxLengthResponseLocation = std::max(::fileReade::maxLengthResponseLocation, storage::locations[tmpLocation.id].getSize);
     } while (tokenizer->rdbuf()->in_avail());
 }
@@ -86,6 +87,7 @@ void ::fileReade::readLocations(std::stringstream *tokenizer) {
 void ::fileReade::readUsers(std::stringstream *tokenizer) {
     User tmpUser;
     std::string token;
+    Buffer buf;
     do {
         (*tokenizer) >> token;
         nextString(tokenizer, tmpUser.firstName);
@@ -102,7 +104,7 @@ void ::fileReade::readUsers(std::stringstream *tokenizer) {
         nextString(tokenizer, tmpUser.email);
         storage::users[tmpUser.id] = tmpUser;
 
-        storage::users[tmpUser.id].updateUserOutput(Buffer::instance->rdBuf, Buffer::instance->smallBuf);
+        storage::users[tmpUser.id].updateUserOutput(buf.rdBuf, buf.smallBuf);
         ::fileReade::maxLengthResponseUser = std::max(::fileReade::maxLengthResponseUser, storage::users[tmpUser.id].getSize);
     } while (tokenizer->rdbuf()->in_avail());
 }
@@ -110,6 +112,7 @@ void ::fileReade::readUsers(std::stringstream *tokenizer) {
 void ::fileReade::readVisits(std::stringstream *tokenizer) {
     Visit tmpVisit;
     std::string token;
+    Buffer buf;
     int cnt = 0;
     do {
         ++cnt;
@@ -127,7 +130,7 @@ void ::fileReade::readVisits(std::stringstream *tokenizer) {
         storage::locations[tmpVisit.location].visits.push_back(storage::visits + tmpVisit.id);
         storage::users[tmpVisit.user].visits.push_back(storage::visits + tmpVisit.id);
 
-        storage::visits[tmpVisit.id].updateVisitOutput(Buffer::instance->rdBuf, Buffer::instance->smallBuf);
+        storage::visits[tmpVisit.id].updateVisitOutput(buf.rdBuf, buf.smallBuf);
         ::fileReade::maxLengthResponseVisit = std::max(::fileReade::maxLengthResponseVisit, storage::visits[tmpVisit.id].getSize);
     } while (tokenizer->rdbuf()->in_avail());
 }

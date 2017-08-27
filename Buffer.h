@@ -14,10 +14,11 @@
 
 class Buffer {
 public:
-    static Buffer instance[THREADS_COUNT];
     static constexpr size_t AVG_FORMAT_SZ = 111;
 private:
     const char *bufToWrite;
+    iovec ovec[2];
+    bool multiWriteType;
 public:
     ssize_t readCount = 0;
     char avgFormat[AVG_FORMAT_SZ + 1]; // zero char
@@ -32,69 +33,57 @@ public:
     inline void writeNotFound() {
         this->bufToWrite = Const::NOT_FOUND;
         this->writeLength = Const::NOT_FOUND_SZ;
-        writeResponse();
     }
 
     inline void writeBadRequest() {
         this->bufToWrite = Const::BAD_REQUEST;
         this->writeLength = Const::BAD_REQUEST_SZ;
-        writeResponse();
     }
 
     inline void writePostOk() {
         this->bufToWrite = Const::POST_OK;
         this->writeLength = Const::POST_OK_SZ;
-        writeResponse();
     }
 
-    inline bool writeResponse(char *buf, size_t size, char *buf2, size_t size2) {
-        iovec ovec[2];
+    inline void writeResponse(char *buf, size_t size, char *buf2, size_t size2) {
+        multiWriteType = true;
         ovec[0].iov_base = buf;
         ovec[0].iov_len = size;
         ovec[1].iov_base = buf2;
         ovec[1].iov_len = size2;
-        int writtenBytes = writev(source, ovec, 2);
-        if (writtenBytes < 0) {
-            std::cout << "error while write, -1 received" << std::endl;
-        }
-        writeLength = size + size2;
-        writePos += writtenBytes;
-        if (writePos != writeLength) {
-            std::cout << "not fully writen 2 " << writePos << ' ' << writeLength << std::endl;
-            return false;
-        } else {
-            if (closeConnection) {
-                close(source);
-            }
-            return true;
-        }
     }
 
     inline void writeResponse(char *buf, size_t size) {
         this->bufToWrite = buf;
         this->writeLength = size;
-        writeResponse();
     }
 
-    inline void processRequest() {
+    inline void readSource() {
         readCount = read(source, rdBuf, sizeof rdBuf);
         writePos = writeLength = 0;
     }
 
-    inline bool writeResponse() {
-        int writtenBytes = write(source, bufToWrite + writePos, writeLength - writePos);
+    inline void writeResponse() {
+        ssize_t writtenBytes;
+        if (multiWriteType) {
+            writtenBytes = writev(source, ovec, 2);
+            writeLength = ovec[0].iov_len + ovec[1].iov_len;
+            multiWriteType = false;
+        } else {
+            writtenBytes = write(source, bufToWrite + writePos, writeLength - writePos);
+        }
         if (writtenBytes < 0) {
             std::cout << "error while write, -1 received" << std::endl;
         }
         writePos += writtenBytes;
         if (writePos != writeLength) {
             std::cout << "not fully writen " << writePos << ' ' << writeLength << std::endl;
-            return false;
+            return;
         } else {
             if (closeConnection) {
                 close(source);
             }
-            return true;
+            return;
         }
     }
 

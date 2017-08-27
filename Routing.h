@@ -15,23 +15,29 @@
 
 namespace Routing {
     inline void process(Buffer *buf) {
-        char *buffer = buf->rdBuf;
-//    buf->writeNotFound();
-        if (buffer[0] == 'G') {
-            buf->closeConnection = false;
-            if (buffer[5] == 117) {
+        int *ptr = (int *) buf->rdBuf;
+        int val = (*ptr ^ *(ptr + 1));
+        //1160196200 get use
+        //1127950696 get loc
+        //1396519784 get visit
+        //994009200 post loc
+        //656826480 post user
+        //1025859696 post visit
+        if (val > 1025859696) {
+            buf->closeConnection = false;//get
+            if (val == 1160196200) {
                 UserGetHandler::process(buf);
-            } else if (buffer[5] == 108) {
+            } else if (val == 1127950696) {
                 LocationGetHandler::process(buf);
             } else {
                 VisitGetHandler::process(buf);
             }
         } else {
-            buf->closeConnection = true;
-            if (buffer[6] == 117) {
-                UserPostHandler::process(buf);
-            } else if (buffer[6] == 118) {
+            buf->closeConnection = true;//post
+            if (val == 1025859696) {
                 VisitPostHandler::process(buf);
+            } else if (val == 656826480) {
+                UserPostHandler::process(buf);
             } else {
                 LocationPostHandler::process(buf);
             }
