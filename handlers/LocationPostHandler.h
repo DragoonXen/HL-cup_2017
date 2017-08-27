@@ -96,6 +96,7 @@ namespace LocationPostHandler {
             Util::unicodeDecode(place, location->place);
             Util::unicodeDecode(city, location->city);
             Util::unicodeDecode(country, location->country);
+            location->countryHash = ::Util::calcHashString(location->country);
             location->updateLocationOutput(buffer->rdBuf, buffer->smallBuf);
         } else {
             int locationId = Util::tryParsePositiveIntPostPath(buf + 16); // 11 pos
@@ -181,6 +182,7 @@ namespace LocationPostHandler {
             }
             if (country != 0) {
                 Util::unicodeDecode(country, location->country);
+                location->countryHash = ::Util::calcHashString(location->country);
             }
             location->updateLocationOutput(buffer->rdBuf, buffer->smallBuf);
         }

@@ -76,6 +76,7 @@ void ::fileReade::readLocations(std::stringstream *tokenizer) {
         tmpLocation.id = nextInt(tokenizer);
         (*tokenizer) >> token;
         nextString(tokenizer, tmpLocation.country);
+        tmpLocation.countryHash = ::Util::calcHashString(tmpLocation.country);
         storage::locations[tmpLocation.id] = tmpLocation;
 
         storage::locations[tmpLocation.id].updateLocationOutput(Buffer::instance->rdBuf, Buffer::instance->smallBuf);

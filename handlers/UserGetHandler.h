@@ -115,9 +115,9 @@ namespace UserGetHandler {
                 }
                 std::vector<Visit *> visits(user->visits.begin(), user->visits.end());
                 if (country != 0) {
-                    ::Util::uriDecode(country);
+                    int hash = ::Util::calcHashUrl(country);
                     for (std::vector<Visit *>::iterator it = visits.begin(); it != visits.end();) {
-                        if (strcmp(storage::locations[(*it)->location].country, country)) {
+                        if (storage::locations[(*it)->location].countryHash != hash) {
                             *it = *visits.rbegin();
                             visits.pop_back();
                         } else {

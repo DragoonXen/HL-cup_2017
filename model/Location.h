@@ -16,6 +16,7 @@ public:
     int id;
     char place[101];//unlimited
     char country[101];//50
+    int countryHash;
     char city[101];//50
     int distance;
     std::vector<Visit *> visits;
@@ -27,7 +28,7 @@ public:
         Util::copyCharArray(other.place, this->place);
         Util::copyCharArray(other.country, this->country);
         Util::copyCharArray(other.city, this->city);
-
+        this->countryHash = other.countryHash;
         return *this;
     }
 

@@ -260,6 +260,40 @@ namespace Util {
         *pEnd = 0;
     }
 
+    inline int calcHashUrl(char *pSrc) {
+        // Note from RFC1630: "Sequences which start with a percent
+        // sign but are not followed by two hexadecimal characters
+        // (0-9, A-F) are reserved for future extension"
+        int hash = 0;
+        while (*pSrc != 0) {
+            if (*pSrc == '%') {
+                char dec1, dec2;
+                if (-1 != (dec1 = HEX2DEC[*(pSrc + 1)])
+                    && -1 != (dec2 = HEX2DEC[*(pSrc + 2)])) {
+                    dec1 = ((dec1 << 4) | dec2);
+                    hash = hash * 39 + dec1;
+                    pSrc += 3;
+                    continue;
+                }
+            }
+            if (*pSrc == '+') {
+                hash = hash * 39 + ' ';
+                ++pSrc;
+            } else {
+                hash = hash * 39 + (*pSrc++);
+            }
+        }
+        return hash;
+    }
+
+    inline int calcHashString(char *pSrc) {
+        int hash = 0;
+        while (*pSrc != 0) {
+            hash = hash * 39 + (*pSrc++);
+        }
+        return hash;
+    }
+
     const short CYRILIC_CONVERT[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
