@@ -25,18 +25,18 @@ static int make_socket_nodelay(int sfd) {
         perror("setsockopt");
         return -1;
     }
-    if (setsockopt(sfd, SOL_SOCKET, SO_DONTROUTE, (char *) &flags, sizeof(int)) < 0) {
-        perror("setsockopt");
-        return -1;
-    }
-    if (setsockopt(sfd, SOL_SOCKET, SO_SNDBUF, &sendBuf, sizeof(sendBuf)) < 0) {
-        perror("setsockopt");
-        return -1;
-    }
-    if (setsockopt(sfd, SOL_SOCKET, SO_RCVBUF, &recvBuf, sizeof(recvBuf)) < 0) {
-        perror("setsockopt");
-        return -1;
-    }
+//    if (setsockopt(sfd, SOL_SOCKET, SO_DONTROUTE, (char *) &flags, sizeof(int)) < 0) {
+//        perror("setsockopt");
+//        return -1;
+//    }
+//    if (setsockopt(sfd, SOL_SOCKET, SO_SNDBUF, &sendBuf, sizeof(sendBuf)) < 0) {
+//        perror("setsockopt");
+//        return -1;
+//    }
+//    if (setsockopt(sfd, SOL_SOCKET, SO_RCVBUF, &recvBuf, sizeof(recvBuf)) < 0) {
+//        perror("setsockopt");
+//        return -1;
+//    }
 
     return 0;
 }
@@ -266,53 +266,9 @@ int main(int argc, char *argv[]) {
                 // new connection here
             } else {
                 if (e & 1) { // ready to read_to_buf
-//                    int count = read(events[i].data.fd, readBuf, sizeof readBuf);
-//                    uint32_t bufNom;
-//                    if (*(&events[i].data.u32 + 1) & NO_BUFFER) {
-//                        // receive Buffer for request processing
-//                        bufNom = availableBuffers[--currBuffersTop];
-//                        *(&events[i].data.u32 + 1) = bufNom;
-//                        buffers[bufNom].source = events[i].data.fd;
-////                        buffers[bufNom].closeConnection = true;
-////                        fprintf(stdout, "source %d use Buffer %d for read\n", events[i].data.fd, bufNom);
-//                    } else {
-//                        bufNom = *(&events[i].data.u32 + 1);
-////                        fprintf(stdout, "source %d use Buffer %d for read\n", events[i].data.fd, bufNom);
-//                    }
                     Buffer::instance->source = events[i].data.fd;
                     Buffer::instance->processRequest();
                     Routing::process(Buffer::instance);
-//                    if (!Buffer::instance.complete()) {
-//                        Buffer::instance.writeResponse()
-//                        if (Buffer::instance.closeConnection) {
-//                            close(events[i].data.fd);
-//                        } else { // keep alive, wait for response
-//                            events[i].events = EPOLLIN | EPOLLHUP | EPOLLRDHUP;
-//                            s = epoll_ctl(efd, EPOLL_CTL_MOD, events[i].data.fd, events + i);
-//                            if (s == -1) {
-//                                perror("epoll_ctl");
-//                                abort();
-//                            }
-//                        }
-//                    }
-//                    if (count == -1) {
-//                        if (errno != EAGAIN) {
-//                            perror("read_to_buf");
-//                            close(events[i].data.fd); // close connection
-//                        }
-//                        break;
-//                    } else if (count == 0) {
-//                        /* End of file. The remote has closed the
-//                           connection. */
-//                        close(events[i].data.fd); // close connection
-//                        break;
-//                    }
-                    /* Write the Buffer to standard output */
-//                    s = write(1, readBuf, count);
-//                    if (s == -1) {
-//                        perror("write");
-//                        abort();
-//                    }
                 }
             }
         }
