@@ -52,28 +52,30 @@ namespace Util {
         return (int) (destPos - dest);
     }
 
+    const int negVals[] = {48, 528, 5328, 53328, 533328, 5333328, 53333328, 533333328, 1038366032, 1793725776};
+
     inline int tryParsePositiveIntPath(char *buf) {
+        if (*buf > 57) {
+            return INT_MIN;
+        }
         int val = 0;
+        int idx = 0;
         do {
-            int newVal = *buf - '0';
-            if (newVal < 0 || newVal > 9) {
-                return INT_MIN;
-            }
-            val = val * 10 + newVal;
-        } while (*(++buf) > 47);
-        return val;
+            val = val * 10 + *(buf + idx);
+        } while (*(buf + (++idx)) > 47);
+        return val - negVals[idx - 1];
     }
 
     inline int tryParsePositiveIntPostPath(char *buf) {
+        if (*buf > 57) {
+            return INT_MIN;
+        }
         int val = 0;
+        int idx = 0;
         do {
-            int newVal = *buf - '0';
-            if (newVal < 0 || newVal > 9) {
-                return INT_MIN;
-            }
-            val = val * 10 + newVal;
-        } while (*(++buf) != '?');
-        return val;
+            val = val * 10 + *(buf + idx);
+        } while (*(buf + (++idx)) != '?');
+        return val - negVals[idx - 1];
     }
 
     inline char *getLastPathCharPtr(char *buf) {
