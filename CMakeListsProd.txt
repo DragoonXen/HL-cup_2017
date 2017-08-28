@@ -3,7 +3,7 @@ project(epoll_try)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_BUILD_TYPE Release)
-add_compile_options(-O3 -march=native -finline-limit=50000000)
+add_compile_options(-O3)
 add_definitions(-DTHREADS_COUNT=4)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 

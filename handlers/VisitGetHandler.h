@@ -13,7 +13,7 @@
 
 namespace VisitGetHandler {
 
-    inline void process(Buffer *buffer) {
+    void process(Buffer *buffer) {
         char *buf = buffer->rdBuf;
         int visitId = Util::tryParsePositiveIntPath(buf + 12); // 11 pos
         if (visitId == INT_MIN) {

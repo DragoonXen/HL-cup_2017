@@ -10,7 +10,7 @@
 #include "../storage.h"
 
 namespace VisitPostHandler {
-    inline void process(Buffer *buffer) {
+    void process(Buffer *buffer) {
         char *buf = buffer->rdBuf;
         if (buf[13] == 110) { //neW
             char *startPos = ::Util::getStartBodyIdx(buf + 37); // +24

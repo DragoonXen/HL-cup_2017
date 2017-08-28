@@ -13,6 +13,10 @@ void ::fileReade::readData(const char *path) {
     storage::locations = new Location[storage::locationsArrayLength];
     storage::visits = new Visit[storage::visitsArrayLength];
 
+//    std::cout << sizeof(*storage::users) << std::endl;
+//    std::cout << sizeof(*storage::locations) << std::endl;
+//    std::cout << sizeof(*storage::visits) << std::endl;
+
     DIR *dir;
     struct dirent *ent;
     std::string dirPath = path;

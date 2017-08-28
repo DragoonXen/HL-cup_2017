@@ -9,7 +9,7 @@
 #include "../Util.h"
 
 namespace LocationPostHandler {
-    inline void process(Buffer *buffer) {
+    void process(Buffer *buffer) {
         char *buf = buffer->rdBuf;
         if (buf[16] == 110) {
             char *startPos = ::Util::getStartBodyIdx(buf + 40); // +24

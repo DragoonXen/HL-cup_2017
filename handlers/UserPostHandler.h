@@ -9,7 +9,7 @@
 #include "../Buffer.h"
 
 namespace UserPostHandler {
-    inline void process(Buffer *buffer) {
+    void process(Buffer *buffer) {
         char *buf = buffer->rdBuf;
         if (buf[12] == 110) {
             char *startPos = ::Util::getStartBodyIdx(buf + 36); // +24

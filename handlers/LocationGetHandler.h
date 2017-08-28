@@ -53,7 +53,7 @@ namespace LocationGetHandler {
         buffer->writeResponse(AVG_FORMAT, buffer->AVG_FORMAT_SZ);
     }
 
-    inline void process(Buffer *buffer) {
+    void process(Buffer *buffer) {
         char *buf = buffer->rdBuf;
         int locationId = Util::tryParsePositiveIntPath(buf + 15); // 11 pos
         if (locationId == INT_MIN) {
