@@ -8,7 +8,7 @@
 #include "Visit.h"
 
 class User {
-    static const int MAX_BUF_SIZE = 400;
+    static const int MAX_BUF_SIZE = 389;
 
 public:
     char getBuffer[MAX_BUF_SIZE];

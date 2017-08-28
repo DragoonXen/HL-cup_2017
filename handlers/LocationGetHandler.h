@@ -44,11 +44,11 @@ namespace LocationGetHandler {
             result += 10;
         }
         result /= 10;
-        for (int i = 109; i != 104; --i) {
+        for (int i = buffer->AVG_FORMAT_SZ - 2; i != buffer->AVG_FORMAT_SZ - 7; --i) {
             AVG_FORMAT[i] = (char) (result % 10 + '0');
             result /= 10;
         }
-        AVG_FORMAT[103] = (char) (result + '0');
+        AVG_FORMAT[buffer->AVG_FORMAT_SZ - 8] = (char) (result + '0');
 //    Util::copyCharArray(AVG_FORMAT, buffer->wrBuf);
         buffer->writeResponse(AVG_FORMAT, buffer->AVG_FORMAT_SZ);
     }

@@ -15,7 +15,7 @@
 class Buffer {
 public:
     static Buffer instance[THREADS_COUNT];
-    static constexpr size_t AVG_FORMAT_SZ = 111;
+    static constexpr size_t AVG_FORMAT_SZ = 98;
 private:
     const char *bufToWrite;
 public:

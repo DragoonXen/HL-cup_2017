@@ -241,31 +241,6 @@ namespace Util {
                     /* F */ -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
             };
 
-    inline void uriDecode(char *pSrc) {
-        // Note from RFC1630: "Sequences which start with a percent
-        // sign but are not followed by two hexadecimal characters
-        // (0-9, A-F) are reserved for future extension"
-        char *pEnd = pSrc;
-        while (*pSrc != 0) {
-            if (*pSrc == '%') {
-                char dec1, dec2;
-                if (-1 != (dec1 = HEX2DEC[*(pSrc + 1)])
-                    && -1 != (dec2 = HEX2DEC[*(pSrc + 2)])) {
-                    *pEnd++ = ((dec1 << 4) | dec2);
-                    pSrc += 3;
-                    continue;
-                }
-            }
-            if (*pSrc == '+') {
-                *pEnd++ = ' ';
-                ++pSrc;
-            } else {
-                *pEnd++ = *pSrc++;
-            }
-        }
-        *pEnd = 0;
-    }
-
     inline int calcHashUrl(char *pSrc) {
         // Note from RFC1630: "Sequences which start with a percent
         // sign but are not followed by two hexadecimal characters
