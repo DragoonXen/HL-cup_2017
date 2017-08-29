@@ -121,7 +121,7 @@ void ::fileReade::readVisits(std::stringstream *tokenizer) {
         tmpVisit.mark = nextMark(tokenizer);
         storage::visits[tmpVisit.id] = tmpVisit;
         storage::locations[tmpVisit.location].visits.push_back(storage::visits + tmpVisit.id);
-        storage::users[tmpVisit.user].visits.push_back(storage::visits + tmpVisit.id);
+        storage::users[tmpVisit.user].push_back(storage::visits + tmpVisit.id);
 
         storage::visits[tmpVisit.id].updateVisitOutput(Buffer::instance->rdBuf, Buffer::instance->smallBuf);
     } while (tokenizer->rdbuf()->in_avail());

@@ -20,7 +20,24 @@ public:
     char lastName[101];// 50 chars
     char male;
     int birthDate;
-    std::vector<Visit *> visits;
+    Visit **visits;
+    size_t visits_sz = 0;
+    size_t visits_cnt = 0;
+
+    inline bool noVisits() {
+        return visits_cnt == 0;
+    }
+
+    inline void push_back(Visit *visit) {
+        if (visits_sz == visits_cnt) {
+            Visit **tmpVisits = new Visit *[visits_sz + 1];
+            memcpy(tmpVisits, visits, sizeof(Visit *) * visits_sz);
+            ++visits_sz;
+            delete[] visits;
+            visits = tmpVisits;
+        }
+        visits[visits_cnt++] = visit;
+    }
 
     inline User &operator=(const User &user) {
         this->id = user.id;

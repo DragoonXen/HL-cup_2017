@@ -120,13 +120,13 @@ namespace UserGetHandler {
                             country = buffer->pathBuf[i + 1];
                     }
                 }
-                if (user->visits.empty()) {
+                if (user->noVisits()) {
                     buffer->writeResponse(NO_VISITS_BUF, NO_VISITS_BUF_SZ);
                     return;
                 }
 
                 Visit **visits = buffer->visits;
-                cnt = user->visits.size();
+                cnt = user->visits_cnt;
                 for (int i = 0; i != cnt; ++i) {
                     visits[i] = user->visits[i];
                 }
@@ -192,14 +192,14 @@ namespace UserGetHandler {
                 });
                 writeResponse(buffer, visits, cnt);
             } else {
-                if (user->visits.empty()) {
+                if (user->noVisits()) {
                     buffer->writeResponse(NO_VISITS_BUF, NO_VISITS_BUF_SZ);
                     return;
                 }
-                std::sort(user->visits.begin(), user->visits.end(), [](const Visit *first, const Visit *second) {
+                std::sort(user->visits, user->visits + user->visits_cnt, [](const Visit *first, const Visit *second) {
                     return first->visitedAt < second->visitedAt;
                 });
-                writeResponse(buffer, user->visits);
+                writeResponse(buffer, user->visits, user->visits_cnt);
             }
         }
     }

@@ -10,7 +10,7 @@ Location *::storage::locations;
 Visit *::storage::visits;
 
 void ::storage::printCnt() {
-    std::vector<int> visitsCount;
+    std::vector<size_t> visitsCount;
     int sum = 0;
     size_t maxVal = 0;
     size_t maxLocGetSize = 0;
@@ -42,12 +42,12 @@ void ::storage::printCnt() {
             continue;
         }
         ++cnt;
-        visitsCount.push_back(users[i].visits.size());
-        std::sort(users[i].visits.begin(), users[i].visits.end(), [](const Visit *first, const Visit *second) {
+        visitsCount.push_back(users[i].visits_cnt);
+        std::sort(users[i].visits, users[i].visits + users[i].visits_cnt, [](const Visit *first, const Visit *second) {
             return first->visitedAt < second->visitedAt;
         });
-        sum += users[i].visits.size();
-        maxVal = std::max(maxVal, users[i].visits.size());
+        sum += users[i].visits_cnt;
+        maxVal = std::max(maxVal, users[i].visits_cnt);
         maxUserGetSize = std::max(maxUserGetSize, users[i].getSize);
     }
     fprintf(stdout, "%d users\n", cnt);

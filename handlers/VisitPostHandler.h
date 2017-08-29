@@ -88,7 +88,7 @@ namespace VisitPostHandler {
             visit->user = Util::parseUInt(user);
             visit->visitedAt = Util::parseUInt(visitedAt);
             visit->mark = Util::parseUInt(mark);
-            ::storage::users[visit->user].visits.push_back(visit);
+            ::storage::users[visit->user].push_back(visit);
             ::storage::locations[visit->location].visits.push_back(visit);
             visit->updateVisitOutput(buffer->rdBuf, buffer->smallBuf);
         } else {
@@ -171,16 +171,17 @@ namespace VisitPostHandler {
                 ::storage::locations[visit->location].visits.push_back(visit);
             }
             if (user != 0) {
-                std::vector<Visit *> &vec = ::storage::users[visit->user].visits;
-                for (std::vector<Visit *>::iterator it = vec.begin(); it != vec.end(); ++it) {
+                Visit **vec = ::storage::users[visit->user].visits;
+                Visit **endVec = ::storage::users[visit->user].visits + ::storage::users[visit->user].visits_cnt;
+                for (Visit ** it = vec; it != endVec; ++it) {
                     if (*it == visit) {
-                        *it = *vec.rbegin();
-                        vec.pop_back();
+                        *it = *(endVec - 1);
+                        --::storage::users[visit->user].visits_cnt;
                         break;
                     }
                 }
                 visit->user = Util::parseUInt(user);//replace user
-                ::storage::users[visit->user].visits.push_back(visit);
+                ::storage::users[visit->user].push_back(visit);
             }
             if (visitedAt != 0) {
                 visit->visitedAt = Util::parseUInt(visitedAt);
