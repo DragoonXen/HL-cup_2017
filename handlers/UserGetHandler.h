@@ -27,7 +27,7 @@ namespace UserGetHandler {
         buffer += ::Util::copyCharArray(::storage::locations[visit->location].place, buffer);
 
         buffer += ::Util::copyCharArray(VISITED_AT, buffer);
-        buffer += ::Util::uintToStringBytes(visit->visitedAt, buffer, smallBuf);
+        buffer += ::Util::intToStringBytes(visit->visitedAt, buffer, smallBuf);
 
         buffer += ::Util::copyCharArray(MARK, buffer);
         *(buffer - 2) = (char) (visit->mark + '0');
@@ -45,29 +45,17 @@ namespace UserGetHandler {
             };
         }
         tempAnsBuffer += ::Util::copyCharArray(USER_VISITS_ENDING, tempAnsBuffer);
+//    *tempAnsBuffer = 0;
+//    buffer->writeResponse(buffer->rdBuf, )
 
         char *writeBuf = buffer->wrBuf + Const::OK_PREPARED_SZ;
+//        writeBuf += ::Util::copyCharArray(Const::OK_PREPARED, writeBuf);
         writeBuf += ::Util::uintToStringBytes((int) (tempAnsBuffer - buffer->rdBuf), writeBuf, buffer->smallBuf);
         writeBuf += ::Util::copyCharArray(Const::OK_PREPARED_SECOND, writeBuf);
         buffer->writeResponse(buffer->wrBuf, writeBuf - buffer->wrBuf, buffer->rdBuf, tempAnsBuffer - buffer->rdBuf);
-    }
+//    *writeBuf = 0;
 
-    inline void writeResponse(Buffer *buffer, std::vector<Visit *>::iterator begin, std::vector<Visit *>::iterator end) {
-        char *tempAnsBuffer = buffer->rdBuf;
-        tempAnsBuffer += ::Util::copyCharArray(USER_VISITS_FORMAT, tempAnsBuffer);
-        {
-            tempAnsBuffer = formatVisit(tempAnsBuffer, *begin++, buffer->smallBuf);
-            while (begin != end) {
-                *tempAnsBuffer++ = ',';
-                tempAnsBuffer = formatVisit(tempAnsBuffer, *begin++, buffer->smallBuf);
-            };
-        }
-        tempAnsBuffer += ::Util::copyCharArray(USER_VISITS_ENDING, tempAnsBuffer);
-
-        char *writeBuf = buffer->wrBuf + Const::OK_PREPARED_SZ;
-        writeBuf += ::Util::uintToStringBytes((int) (tempAnsBuffer - buffer->rdBuf), writeBuf, buffer->smallBuf);
-        writeBuf += ::Util::copyCharArray(Const::OK_PREPARED_SECOND, writeBuf);
-        buffer->writeResponse(buffer->wrBuf, writeBuf - buffer->wrBuf, buffer->rdBuf, tempAnsBuffer - buffer->rdBuf);
+//    buffer->writeResponse(buffer->wrBuf, writeBuf - buffer->wrBuf);
     }
 
     inline void writeResponse(Buffer *buffer, const std::vector<Visit *> &visits) {
@@ -81,24 +69,17 @@ namespace UserGetHandler {
             };
         }
         tempAnsBuffer += ::Util::copyCharArray(USER_VISITS_ENDING, tempAnsBuffer);
+//    *tempAnsBuffer = 0;
+//    buffer->writeResponse(buffer->rdBuf, )
 
         char *writeBuf = buffer->wrBuf + Const::OK_PREPARED_SZ;
+//        writeBuf += ::Util::copyCharArray(Const::OK_PREPARED, writeBuf);
         writeBuf += ::Util::uintToStringBytes((int) (tempAnsBuffer - buffer->rdBuf), writeBuf, buffer->smallBuf);
         writeBuf += ::Util::copyCharArray(Const::OK_PREPARED_SECOND, writeBuf);
         buffer->writeResponse(buffer->wrBuf, writeBuf - buffer->wrBuf, buffer->rdBuf, tempAnsBuffer - buffer->rdBuf);
-    }
+//    *writeBuf = 0;
 
-    inline std::vector<Visit *>::iterator findVisitedAt(std::vector<Visit *>::iterator begin, std::vector<Visit *>::iterator end, int visitedAt) {
-        std::vector<Visit *>::iterator aim;
-        while (begin != end) {
-            aim = begin + ((end - begin) >> 1);
-            if ((*aim)->visitedAt > visitedAt) {
-                end = aim;
-            } else {
-                begin = aim + 1;
-            }
-        }
-        return begin;
+//    buffer->writeResponse(buffer->wrBuf, writeBuf - buffer->wrBuf);
     }
 
     void process(Buffer *buffer) {
@@ -155,72 +136,81 @@ namespace UserGetHandler {
                     buffer->writeResponse(NO_VISITS_BUF, NO_VISITS_BUF_SZ);
                     return;
                 }
-                std::vector<Visit *>::iterator start = user->visits.begin();
-                std::vector<Visit *>::iterator end = user->visits.end();
-                if (fromDate != INT_MIN) {
-                    start = findVisitedAt(start, end, fromDate);
-                    if (start == end) {
+
+                Visit **visits = buffer->visits;
+                for (int i = 0; i != user->visits.size(); ++i) {
+                    visits[i] = user->visits[i];
+                }
+                cnt = user->visits.size();
+                if (country != 0) {
+                    int hash = ::Util::calcHashUrl(country);
+                    for (int i = 0; i != cnt;) {
+                        if (storage::locations[visits[i]->location].countryHash != hash) {
+                            visits[i] = visits[cnt - 1];
+                            --cnt;
+                        } else {
+                            ++i;
+                        }
+                    }
+                    if (cnt == 0) {
+                        buffer->writeResponse(NO_VISITS_BUF, NO_VISITS_BUF_SZ);
+                        return;
+                    }
+                }
+                if (toDistance != INT_MIN) {
+                    for (int i = 0; i != cnt;) {
+                        if (storage::locations[visits[i]->location].distance >= toDistance) {
+                            visits[i] = visits[cnt - 1];
+                            --cnt;
+                        } else {
+                            ++i;
+                        }
+                    }
+                    if (cnt == 0) {
                         buffer->writeResponse(NO_VISITS_BUF, NO_VISITS_BUF_SZ);
                         return;
                     }
                 }
                 if (toDate != INT_MIN) {
-                    end = findVisitedAt(start, end, toDate);
-                    if (start == end) {
-                        buffer->writeResponse(NO_VISITS_BUF, NO_VISITS_BUF_SZ);
-                        return;
-                    }
-                }
-
-                Visit **visits = buffer->visits;
-                cnt = 0;
-                if (country != 0) {
-                    int hash = ::Util::calcHashUrl(country);
-                    while (start != end) {
-                        if (storage::locations[(*start)->location].countryHash == hash) {
-                            visits[cnt++] = *start;
+                    for (int i = 0; i != cnt;) {
+                        if (visits[i]->visitedAt >= toDate) {
+                            visits[i] = visits[cnt - 1];
+                            --cnt;
+                        } else {
+                            ++i;
                         }
-                        ++start;
                     }
                     if (cnt == 0) {
                         buffer->writeResponse(NO_VISITS_BUF, NO_VISITS_BUF_SZ);
                         return;
                     }
-                    if (toDistance != INT_MIN) {
-                        int newCnt = 0;
-                        for (int i = 0; i != cnt; ++i) {
-                            if (storage::locations[visits[i]->location].distance < toDistance) {
-                                visits[newCnt++] = visits[i];
-                            }
+                }
+                if (fromDate != INT_MIN) {
+                    for (int i = 0; i != cnt;) {
+                        if (visits[i]->visitedAt <= fromDate) {
+                            visits[i] = visits[cnt - 1];
+                            --cnt;
+                        } else {
+                            ++i;
                         }
-                        if (newCnt == 0) {
-                            buffer->writeResponse(NO_VISITS_BUF, NO_VISITS_BUF_SZ);
-                            return;
-                        }
-                        cnt = newCnt;
-                    }
-                    writeResponse(buffer, visits, cnt);
-                    return;
-                } else if (toDistance != INT_MIN) {
-                    while (start != end) {
-                        if (storage::locations[(*start)->location].distance < toDistance) {
-                            visits[cnt++] = *start;
-                        }
-                        ++start;
                     }
                     if (cnt == 0) {
                         buffer->writeResponse(NO_VISITS_BUF, NO_VISITS_BUF_SZ);
                         return;
                     }
-                    writeResponse(buffer, visits, cnt);
-                    return;
                 }
-                writeResponse(buffer, start, end);
+                std::sort(visits, visits + cnt, [](const Visit *first, const Visit *second) {
+                    return first->visitedAt < second->visitedAt;
+                });
+                writeResponse(buffer, visits, cnt);
             } else {
                 if (user->visits.empty()) {
                     buffer->writeResponse(NO_VISITS_BUF, NO_VISITS_BUF_SZ);
                     return;
                 }
+                std::sort(user->visits.begin(), user->visits.end(), [](const Visit *first, const Visit *second) {
+                    return first->visitedAt < second->visitedAt;
+                });
                 writeResponse(buffer, user->visits);
             }
         }

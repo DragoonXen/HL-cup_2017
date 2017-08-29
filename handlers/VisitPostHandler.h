@@ -89,9 +89,6 @@ namespace VisitPostHandler {
             visit->visitedAt = Util::parseUInt(visitedAt);
             visit->mark = Util::parseUInt(mark);
             ::storage::users[visit->user].visits.push_back(visit);
-            std::sort(::storage::users[visit->user].visits.begin(), ::storage::users[visit->user].visits.end(), [](const Visit *first, const Visit *second) {
-                return first->visitedAt < second->visitedAt;
-            });
             ::storage::locations[visit->location].visits.push_back(visit);
             visit->updateVisitOutput(buffer->rdBuf, buffer->smallBuf);
         } else {
@@ -182,20 +179,11 @@ namespace VisitPostHandler {
                         break;
                     }
                 }
-                std::sort(::storage::users[visit->user].visits.begin(), ::storage::users[visit->user].visits.end(), [](const Visit *first, const Visit *second) {
-                    return first->visitedAt < second->visitedAt;
-                });
                 visit->user = Util::parseUInt(user);//replace user
                 ::storage::users[visit->user].visits.push_back(visit);
-                std::sort(::storage::users[visit->user].visits.begin(), ::storage::users[visit->user].visits.end(), [](const Visit *first, const Visit *second) {
-                    return first->visitedAt < second->visitedAt;
-                });
             }
             if (visitedAt != 0) {
                 visit->visitedAt = Util::parseUInt(visitedAt);
-                std::sort(::storage::users[visit->user].visits.begin(), ::storage::users[visit->user].visits.end(), [](const Visit *first, const Visit *second) {
-                    return first->visitedAt < second->visitedAt;
-                });
             }
             if (mark != 0) {
                 visit->mark = Util::parseUInt(mark);
