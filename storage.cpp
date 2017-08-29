@@ -40,6 +40,9 @@ void ::storage::printCnt() {
         }
         ++cnt;
         visitsCount.push_back(users[i].visits.size());
+        std::sort(users[i].visits.begin(), users[i].visits.end(), [](const Visit *first, const Visit *second) {
+            return first->visitedAt < second->visitedAt;
+        });
         sum += users[i].visits.size();
         maxVal = std::max(maxVal, users[i].visits.size());
     }

@@ -34,7 +34,7 @@ namespace UserGetHandler {
         return buffer;
     }
 
-    inline void writeResponse(Buffer *buffer, Visit **visits, const int cnt) {
+    inline void writeResponse(Buffer *buffer, Visit **visits, const size_t cnt) {
         char *tempAnsBuffer = buffer->rdBuf;
         tempAnsBuffer += ::Util::copyCharArray(USER_VISITS_FORMAT, tempAnsBuffer);
         {
@@ -45,17 +45,11 @@ namespace UserGetHandler {
             };
         }
         tempAnsBuffer += ::Util::copyCharArray(USER_VISITS_ENDING, tempAnsBuffer);
-//    *tempAnsBuffer = 0;
-//    buffer->writeResponse(buffer->rdBuf, )
 
         char *writeBuf = buffer->wrBuf + Const::OK_PREPARED_SZ;
-//        writeBuf += ::Util::copyCharArray(Const::OK_PREPARED, writeBuf);
         writeBuf += ::Util::uintToStringBytes((int) (tempAnsBuffer - buffer->rdBuf), writeBuf, buffer->smallBuf);
         writeBuf += ::Util::copyCharArray(Const::OK_PREPARED_SECOND, writeBuf);
         buffer->writeResponse(buffer->wrBuf, writeBuf - buffer->wrBuf, buffer->rdBuf, tempAnsBuffer - buffer->rdBuf);
-//    *writeBuf = 0;
-
-//    buffer->writeResponse(buffer->wrBuf, writeBuf - buffer->wrBuf);
     }
 
     inline void writeResponse(Buffer *buffer, const std::vector<Visit *> &visits) {
@@ -69,17 +63,11 @@ namespace UserGetHandler {
             };
         }
         tempAnsBuffer += ::Util::copyCharArray(USER_VISITS_ENDING, tempAnsBuffer);
-//    *tempAnsBuffer = 0;
-//    buffer->writeResponse(buffer->rdBuf, )
 
         char *writeBuf = buffer->wrBuf + Const::OK_PREPARED_SZ;
-//        writeBuf += ::Util::copyCharArray(Const::OK_PREPARED, writeBuf);
         writeBuf += ::Util::uintToStringBytes((int) (tempAnsBuffer - buffer->rdBuf), writeBuf, buffer->smallBuf);
         writeBuf += ::Util::copyCharArray(Const::OK_PREPARED_SECOND, writeBuf);
         buffer->writeResponse(buffer->wrBuf, writeBuf - buffer->wrBuf, buffer->rdBuf, tempAnsBuffer - buffer->rdBuf);
-//    *writeBuf = 0;
-
-//    buffer->writeResponse(buffer->wrBuf, writeBuf - buffer->wrBuf);
     }
 
     void process(Buffer *buffer) {
@@ -104,7 +92,7 @@ namespace UserGetHandler {
                 int toDate = INT_MIN;
                 int fromDate = INT_MIN;
                 char *country = 0;
-                int cnt = ::Util::parseQuery(lastPathChr, buffer->pathBuf);
+                size_t cnt = ::Util::parseQuery(lastPathChr, buffer->pathBuf);
                 for (int i = 0; i != cnt; i += 2) {
                     switch (buffer->pathBuf[i][3]) {
                         case 'i'://1766092660
@@ -138,10 +126,10 @@ namespace UserGetHandler {
                 }
 
                 Visit **visits = buffer->visits;
-                for (int i = 0; i != user->visits.size(); ++i) {
+                cnt = user->visits.size();
+                for (int i = 0; i != cnt; ++i) {
                     visits[i] = user->visits[i];
                 }
-                cnt = user->visits.size();
                 if (country != 0) {
                     int hash = ::Util::calcHashUrl(country);
                     for (int i = 0; i != cnt;) {

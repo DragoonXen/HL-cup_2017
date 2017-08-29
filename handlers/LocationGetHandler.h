@@ -87,7 +87,7 @@ namespace LocationGetHandler {
                 int toDate = INT_MIN;
                 int fromAge = INT_MIN;
                 int toAge = INT_MIN;
-                int cnt = ::Util::parseQuery(lastPathChr, buffer->pathBuf);
+                size_t cnt = ::Util::parseQuery(lastPathChr, buffer->pathBuf);
                 for (int i = 0; i != cnt; i += 2) {
                     switch (buffer->pathBuf[i][2]) {
                         case 'n'://gender
@@ -147,85 +147,91 @@ namespace LocationGetHandler {
                     buffer->writeResponse(EMPTY_AVG, EMPTY_AVG_SZ);
                     return;
                 }
-                std::vector<Visit *> visits(location->visits.begin(), location->visits.end());
+
+                Visit **visits = buffer->visits;
+                cnt = location->visits.size();
+                for (int i = 0; i != cnt; ++i) {
+                    visits[i] = location->visits[i];
+                }
+
                 if (male != 0) {
-                    for (std::vector<Visit *>::iterator it = visits.begin(); it != visits.end();) {
-                        if (::storage::users[(*it)->user].male != male) {
-                            *it = *visits.rbegin();
-                            visits.pop_back();
+                    for (int i = 0; i != cnt;) {
+                        if (::storage::users[visits[i]->user].male != male) {
+                            visits[i] = visits[cnt - 1];
+                            --cnt;
                         } else {
-                            ++it;
+                            ++i;
                         }
                     }
-                    if (visits.empty()) {
+                    if (cnt == 0) {
                         buffer->writeResponse(EMPTY_AVG, EMPTY_AVG_SZ);
                         return;
                     }
                 }
                 if (fromDate != INT_MIN) {
-                    for (std::vector<Visit *>::iterator it = visits.begin(); it != visits.end();) {
-                        if ((*it)->visitedAt <= fromDate) {
-                            *it = *visits.rbegin();
-                            visits.pop_back();
+                    for (int i = 0; i != cnt;) {
+                        if (visits[i]->visitedAt <= fromDate) {
+                            visits[i] = visits[cnt - 1];
+                            --cnt;
                         } else {
-                            ++it;
+                            ++i;
                         }
                     }
-                    if (visits.empty()) {
+                    if (cnt == 0) {
                         buffer->writeResponse(EMPTY_AVG, EMPTY_AVG_SZ);
                         return;
                     }
                 }
                 if (toDate != INT_MIN) {
-                    for (std::vector<Visit *>::iterator it = visits.begin(); it != visits.end();) {
-                        if ((*it)->visitedAt >= toDate) {
-                            *it = *visits.rbegin();
-                            visits.pop_back();
+                    for (int i = 0; i != cnt;) {
+                        if (visits[i]->visitedAt >= toDate) {
+                            visits[i] = visits[cnt - 1];
+                            --cnt;
                         } else {
-                            ++it;
+                            ++i;
                         }
                     }
-                    if (visits.empty()) {
+                    if (cnt == 0) {
                         buffer->writeResponse(EMPTY_AVG, EMPTY_AVG_SZ);
                         return;
                     }
                 }
                 if (fromAge != INT_MIN) {
                     fromAge = (int) (::Const::currentTimestamp + secShift[fromAge]);
-                    for (std::vector<Visit *>::iterator it = visits.begin(); it != visits.end();) {
-                        if (::storage::users[(*it)->user].birthDate >= fromAge) {
-                            *it = *visits.rbegin();
-                            visits.pop_back();
+                    for (int i = 0; i != cnt;) {
+                        if (::storage::users[visits[i]->user].birthDate >= fromAge) {
+                            visits[i] = visits[cnt - 1];
+                            --cnt;
                         } else {
-                            ++it;
+                            ++i;
                         }
                     }
-                    if (visits.empty()) {
+                    if (cnt == 0) {
                         buffer->writeResponse(EMPTY_AVG, EMPTY_AVG_SZ);
                         return;
                     }
                 }
                 if (toAge != INT_MIN) {
                     toAge = (int) (::Const::currentTimestamp + secShift[toAge]);
-                    for (std::vector<Visit *>::iterator it = visits.begin(); it != visits.end();) {
-                        if (::storage::users[(*it)->user].birthDate <= toAge) {
-                            *it = *visits.rbegin();
-                            visits.pop_back();
+                    for (int i = 0; i != cnt;) {
+                        if (::storage::users[visits[i]->user].birthDate <= toAge) {
+                            visits[i] = visits[cnt - 1];
+                            --cnt;
                         } else {
-                            ++it;
+                            ++i;
                         }
                     }
-                    if (visits.empty()) {
+                    if (cnt == 0) {
                         buffer->writeResponse(EMPTY_AVG, EMPTY_AVG_SZ);
                         return;
                     }
                 }
                 int sum = 0;
-                for (Visit *visit : visits) {
-                    sum += visit->mark;
+                for (int i = 0; i != cnt; ++i) {
+                    sum += visits[i]->mark;
                 }
                 // write to buffer
-                writeAvgOutput(buffer, (size_t) sum, visits.size());
+                writeAvgOutput(buffer, (size_t) sum, cnt);
             } else {
                 if (location->visits.empty()) {
                     buffer->writeResponse(EMPTY_AVG, EMPTY_AVG_SZ);

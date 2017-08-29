@@ -85,9 +85,9 @@ namespace Util {
         return buf;
     }
 
-    inline int parseQuery(char *buf, char **dest) {
+    inline size_t parseQuery(char *buf, char **dest) {
         *dest++ = buf;
-        int cnt = 1;
+        size_t cnt = 1;
         do {
             ++buf;
             if (*buf == '&' || *buf == '=') {
