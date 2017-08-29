@@ -16,10 +16,6 @@
 
 namespace fileReade {
 
-    extern size_t maxLengthResponseUser;
-    extern size_t maxLengthResponseLocation;
-    extern size_t maxLengthResponseVisit;
-
     void readData(const char path[]);
 
     void readLocations(std::stringstream *tokenizer);
