@@ -38,6 +38,10 @@ void ::storage::printCnt() {
         if (users[i].id == 0) {
             continue;
         }
+        std::sort(users[i].visits.begin(), users[i].visits.end(), [](const Visit *first, const Visit *second) {
+            return first->visitedAt < second->visitedAt;
+        });
+        users[i].sorted = true;
         ++cnt;
         visitsCount.push_back(users[i].visits.size());
         sum += users[i].visits.size();

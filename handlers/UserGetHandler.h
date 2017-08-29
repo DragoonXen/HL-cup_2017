@@ -27,7 +27,7 @@ namespace UserGetHandler {
         buffer += ::Util::copyCharArray(::storage::locations[visit->location].place, buffer);
 
         buffer += ::Util::copyCharArray(VISITED_AT, buffer);
-        buffer += ::Util::intToStringBytes(visit->visitedAt, buffer, smallBuf);
+        buffer += ::Util::uintToStringBytes(visit->visitedAt, buffer, smallBuf);
 
         buffer += ::Util::copyCharArray(MARK, buffer);
         *(buffer - 2) = (char) (visit->mark + '0');
@@ -99,6 +99,12 @@ namespace UserGetHandler {
             buffer->writeResponse(user->getBuffer, user->getSize);
         } else { // user visits
             bool hasQuery = *(lastPathChr++) == '?';
+            if (!user->sorted) {
+                std::sort(user->visits.begin(), user->visits.end(), [](const Visit *first, const Visit *second) {
+                    return first->visitedAt < second->visitedAt;
+                });
+                user->sorted = true;
+            }
             if (hasQuery) {
                 int toDistance = INT_MIN;
                 int toDate = INT_MIN;
@@ -136,7 +142,6 @@ namespace UserGetHandler {
                     buffer->writeResponse(NO_VISITS_BUF, NO_VISITS_BUF_SZ);
                     return;
                 }
-
                 Visit **visits = buffer->visits;
                 for (int i = 0; i != user->visits.size(); ++i) {
                     visits[i] = user->visits[i];
@@ -208,9 +213,6 @@ namespace UserGetHandler {
                     buffer->writeResponse(NO_VISITS_BUF, NO_VISITS_BUF_SZ);
                     return;
                 }
-                std::sort(user->visits.begin(), user->visits.end(), [](const Visit *first, const Visit *second) {
-                    return first->visitedAt < second->visitedAt;
-                });
                 writeResponse(buffer, user->visits);
             }
         }

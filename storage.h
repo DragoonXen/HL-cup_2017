@@ -15,7 +15,7 @@ namespace storage {
     extern Visit *visits;
 
     const size_t usersArrayLength = 1025000;
-    const size_t locationsArrayLength = 785000;
+    const size_t locationsArrayLength = 800000;
     const size_t visitsArrayLength = 10040000;//1024 * 1024 * 11;
 //    const size_t usersArrayLength = 1024*1024;
 //    const size_t locationsArrayLength = 1000000;

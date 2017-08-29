@@ -139,8 +139,9 @@ int main(int argc, char *argv[]) {
 //    std::cout << ret << std::endl;
 
     std::cout << "start program" << std::endl;
-    mlockall(MCL_CURRENT);
+//    mlockall(MCL_CURRENT);
     fileReade::readData(argc < 3 ? "/root/" : argv[2]);
+    mlockall(MCL_CURRENT | MCL_FUTURE);
 
     int sfd, s;
     int efd;

@@ -89,6 +89,9 @@ namespace VisitPostHandler {
             visit->visitedAt = Util::parseUInt(visitedAt);
             visit->mark = Util::parseUInt(mark);
             ::storage::users[visit->user].visits.push_back(visit);
+            std::sort(::storage::users[visit->user].visits.begin(), ::storage::users[visit->user].visits.end(), [](const Visit *first, const Visit *second) {
+                return first->visitedAt < second->visitedAt;
+            });
             ::storage::locations[visit->location].visits.push_back(visit);
             visit->updateVisitOutput(buffer->rdBuf, buffer->smallBuf);
         } else {
@@ -179,17 +182,18 @@ namespace VisitPostHandler {
                         break;
                     }
                 }
+                ::storage::users[visit->user].sorted = false;
                 visit->user = Util::parseUInt(user);//replace user
                 ::storage::users[visit->user].visits.push_back(visit);
+                ::storage::users[visit->user].sorted = false;
             }
             if (visitedAt != 0) {
                 visit->visitedAt = Util::parseUInt(visitedAt);
+                ::storage::users[visit->user].sorted = false;
             }
             if (mark != 0) {
                 visit->mark = Util::parseUInt(mark);
             }
-            ::storage::users->visits.push_back(visit);
-            ::storage::locations->visits.push_back(visit);
             visit->updateVisitOutput(buffer->rdBuf, buffer->smallBuf);
         }
     }
