@@ -20,7 +20,6 @@ public:
     char lastName[101];// 50 chars
     char male;
     int birthDate;
-    bool sorted = false;
     std::vector<Visit *> visits;
 
     inline User &operator=(const User &user) {

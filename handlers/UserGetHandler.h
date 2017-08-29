@@ -99,12 +99,9 @@ namespace UserGetHandler {
             buffer->writeResponse(user->getBuffer, user->getSize);
         } else { // user visits
             bool hasQuery = *(lastPathChr++) == '?';
-            if (!user->sorted) {
-                std::sort(user->visits.begin(), user->visits.end(), [](const Visit *first, const Visit *second) {
-                    return first->visitedAt < second->visitedAt;
-                });
-                user->sorted = true;
-            }
+            std::sort(user->visits.begin(), user->visits.end(), [](const Visit *first, const Visit *second) {
+                return first->visitedAt < second->visitedAt;
+            });
             if (hasQuery) {
                 int toDistance = INT_MIN;
                 int toDate = INT_MIN;

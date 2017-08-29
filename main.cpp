@@ -139,9 +139,7 @@ int main(int argc, char *argv[]) {
 //    std::cout << ret << std::endl;
 
     std::cout << "start program" << std::endl;
-//    mlockall(MCL_CURRENT);
     fileReade::readData(argc < 3 ? "/root/" : argv[2]);
-    mlockall(MCL_CURRENT | MCL_FUTURE);
 
     int sfd, s;
     int efd;
@@ -214,7 +212,7 @@ int main(int argc, char *argv[]) {
         new std::thread(processThread, threadEfd, i, threadEvents);
 //        thread.detach();
     }
-
+    std::cout << "memlock " << mlockall(MCL_CURRENT | MCL_FUTURE) << std::endl;
 //    for (int i = 0; i != BUFFERS_COUNT; ++i) {
 //        buffers[i].idx = i;
 //        availableBuffers[currBuffersTop++] = i;
@@ -248,7 +246,7 @@ int main(int argc, char *argv[]) {
 //                            break;
 //                        } else {
 //                            perror("accept");
-                            break;
+                        break;
 //                        }
                     }
 //                    fprintf(stdout, "connection %d\n", infd);

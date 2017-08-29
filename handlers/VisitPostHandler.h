@@ -182,14 +182,20 @@ namespace VisitPostHandler {
                         break;
                     }
                 }
-                ::storage::users[visit->user].sorted = false;
+                std::sort(::storage::users[visit->user].visits.begin(), ::storage::users[visit->user].visits.end(), [](const Visit *first, const Visit *second) {
+                    return first->visitedAt < second->visitedAt;
+                });
                 visit->user = Util::parseUInt(user);//replace user
                 ::storage::users[visit->user].visits.push_back(visit);
-                ::storage::users[visit->user].sorted = false;
+                std::sort(::storage::users[visit->user].visits.begin(), ::storage::users[visit->user].visits.end(), [](const Visit *first, const Visit *second) {
+                    return first->visitedAt < second->visitedAt;
+                });
             }
             if (visitedAt != 0) {
                 visit->visitedAt = Util::parseUInt(visitedAt);
-                ::storage::users[visit->user].sorted = false;
+                std::sort(::storage::users[visit->user].visits.begin(), ::storage::users[visit->user].visits.end(), [](const Visit *first, const Visit *second) {
+                    return first->visitedAt < second->visitedAt;
+                });
             }
             if (mark != 0) {
                 visit->mark = Util::parseUInt(mark);
