@@ -8,12 +8,12 @@
 #include <cstring>
 
 namespace Const {
-    static constexpr const char *NOT_FOUND = "HTTP/1.1 404 Not Found\r\nServer: d\r\nContent-Length: 0\r\nContent-Type: application/json\r\n\r\n";
-    static constexpr const char *BAD_REQUEST = "HTTP/1.1 400 Bad Request\r\nServer: d\r\nContent-Length: 0\r\nContent-Type: application/json\r\n\r\n";
-    static constexpr const char *POST_OK = "HTTP/1.1 200 OK\r\nServer: d\r\nContent-Length: 2\r\nContent-Type: application/json\r\n\r\n{}";
-    const char OK_PREPARED[] = "HTTP/1.1 200 OK\r\nServer: d\r\nContent-Type: application/json\r\nContent-Length: ";
+    static constexpr const char *NOT_FOUND = "HTTP/1.1 404 Not Found\r\nG: d\r\nContent-Length: 0\r\nB: 0\r\n\r\n";
+    static constexpr const char *BAD_REQUEST = "HTTP/1.1 400 Bad Request\r\nG: d\r\nContent-Length: 0\r\nC: 0\r\n\r\n";
+    static constexpr const char *POST_OK = "HTTP/1.1 200 OK\r\nH: d\r\nContent-Length: 2\r\nD: 0\r\n\r\n{}";
+    const char OK_PREPARED[] = "HTTP/1.1 200 OK\r\nG: d\r\nS: 0\r\nContent-Length: ";
     const char OK_PREPARED_SECOND[] = "\r\n\r\n";
-    const char AVG_FORMAT[] = "HTTP/1.1 200 OK\r\nServer: d\r\nContent-Type: application/json\r\nContent-Length: 16\r\n\r\n{\"avg\": -.-----}";
+    const char AVG_FORMAT[] = "HTTP/1.1 200 OK\r\nS: d\r\nS: 9\r\nContent-Length: 16\r\n\r\n{\"avg\": -.-----}";
 
     extern long long currentTimestamp;
     extern int currentStage;
