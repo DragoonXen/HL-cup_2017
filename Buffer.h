@@ -78,9 +78,13 @@ public:
         writeResponse();
     }
 
-    inline void processRequest() {
+    inline bool processRequest() {
         readCount = read(source, rdBuf, sizeof rdBuf);
+//        if (readCount == -1) {
+//            return false;
+//        }
         writePos = writeLength = 0;
+        return true;
     }
 
     inline bool writeResponse() {

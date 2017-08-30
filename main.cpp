@@ -109,23 +109,58 @@ Buffer Buffer::instance[];
 //uint32_t availableBuffers[BUFFERS_COUNT];
 //int currBuffersTop;
 
-void processThread(int epollDescriptor, int idx, epoll_event *events) {
+void processThread(int epollDescriptor, int sfd, int idx, epoll_event *events) {
     Buffer *currentBuffer = Buffer::instance + idx;
 
     while (1) {
 //        std::cout << "listen to epoll instance " << epollDescriptor << std::endl;
         int n = epoll_wait(epollDescriptor, events, MAXEVENTS, 0);
         int i, e;
+        if (n) {
+//            std::cout << "thread " << idx << " received " << n << " events" << std::endl;
+        }
         for (i = 0; i < n; i++) {
             e = events[i].events;
             if ((e & EPOLLERR) || (e & EPOLLHUP) || (e & EPOLLRDHUP) || (!(e & EPOLLIN) && !(e & EPOLLOUT))) {
+//                std::cout << "close conn by thread " << idx << " received" << std::endl;
                 close(events[i].data.fd); // close connection
                 continue;
             }
-            if (e & 1) { // ready to read_to_buf
+            if (sfd == events[i].data.fd) {
+                struct sockaddr in_addr;
+                socklen_t in_len;
+                int infd;
+                in_len = sizeof in_addr;
+                int newEvents = n;
+                while (1) {
+                    infd = accept4(sfd, &in_addr, &in_len, SOCK_NONBLOCK);
+                    if (infd == -1) {
+//                        if ((errno == EAGAIN) ||
+//                            (errno == EWOULDBLOCK)) {
+//                            /* We have processed all incoming
+//                               connections. */
+//                            break;
+//                        } else {
+//                            perror("accept");
+                        break;
+//                        }
+                    }
+//                    fprintf(stdout, "connection %d\n", infd);
+                    make_socket_nodelay(infd);
+//                    std::cout << "open conn by thread " << idx << " received, infd " << infd << std::endl;
+                    events[newEvents].data.fd = infd;
+//                    *(&events[newEvents].data.u32 + 1) = NO_BUFFER;
+                    events[newEvents].events = EPOLLIN | EPOLLHUP | EPOLLRDHUP | EPOLLET;
+//                    fprintf(stdout, "%d\n", events[newEvents].events);
+                    epoll_ctl(epollDescriptor, EPOLL_CTL_ADD, infd, &events[newEvents++]);
+                }
+                // new connection here
+            } else if (e & 1) { // ready to read_to_buf
                 currentBuffer->source = events[i].data.fd;
-                currentBuffer->processRequest();
-                Routing::process(currentBuffer);
+                if (currentBuffer->processRequest()) {
+                    Routing::process(currentBuffer);
+                }
+//                std::cout << "read bytes " << currentBuffer->readCount << std::endl;
             }
         }
     }
@@ -197,81 +232,20 @@ int main(int argc, char *argv[]) {
         ::Util::copyCharArray(Const::OK_PREPARED, Buffer::instance[i].wrBuf);
         ::Util::copyCharArray(Const::AVG_FORMAT, Buffer::instance[i].avgFormat);
     }
-    int threadDescriptors[THREADS_COUNT];
-    threadDescriptors[0] = efd;
     for (int i = 1; i < THREADS_COUNT; ++i) {
-        int threadEfd = epoll_create1(EPOLL_CLOEXEC);
-        std::cout << "epoll instance " << threadEfd << " created" << std::endl;
-        if (threadEfd == -1) {
-            perror("epoll_create");
-            abort();
-        }
-        threadDescriptors[i] = threadEfd;
         struct epoll_event *threadEvents = (epoll_event *) calloc(MAXEVENTS, sizeof mainEvent);
         std::cout << "thread " << i << " started" << std::endl;
-        new std::thread(processThread, threadEfd, i, threadEvents);
+        new std::thread(processThread, efd, sfd, i, threadEvents);
 //        thread.detach();
     }
     std::cout << "memlock " << mlockall(MCL_CURRENT | MCL_FUTURE) << std::endl;
+    processThread(efd, sfd, 0, events);
 //    for (int i = 0; i != BUFFERS_COUNT; ++i) {
 //        buffers[i].idx = i;
 //        availableBuffers[currBuffersTop++] = i;
 //    }
 
     /* The event loop */
-    while (1) {
-        int n, i;
-
-        n = epoll_wait(efd, events, MAXEVENTS, 0);
-        int e;
-        for (i = 0; i != n; i++) {
-            e = events[i].events;
-            if ((e & EPOLLERR) || (e & EPOLLHUP) || (e & EPOLLRDHUP) || (!(e & EPOLLIN) && !(e & EPOLLOUT))) {
-                close(events[i].data.fd); // close connection
-                continue;
-            }
-            if (sfd == events[i].data.fd) {
-                struct sockaddr in_addr;
-                socklen_t in_len;
-                int infd;
-                in_len = sizeof in_addr;
-                int newEvents = n;
-                while (1) {
-                    infd = accept4(sfd, &in_addr, &in_len, SOCK_NONBLOCK);
-                    if (infd == -1) {
-//                        if ((errno == EAGAIN) ||
-//                            (errno == EWOULDBLOCK)) {
-//                            /* We have processed all incoming
-//                               connections. */
-//                            break;
-//                        } else {
-//                            perror("accept");
-                        break;
-//                        }
-                    }
-//                    fprintf(stdout, "connection %d\n", infd);
-                    make_socket_nodelay(infd);
-
-                    events[newEvents].data.fd = infd;
-//                    *(&events[newEvents].data.u32 + 1) = NO_BUFFER;
-                    events[newEvents].events = EPOLLIN | EPOLLHUP | EPOLLRDHUP;
-//                    fprintf(stdout, "%d\n", events[newEvents].events);
-                    s = epoll_ctl(threadDescriptors[infd % THREADS_COUNT], EPOLL_CTL_ADD, infd, &events[newEvents++]);
-                    if (s == -1) {
-                        perror("epoll_ctl");
-                        abort();
-                    }
-                }
-                // new connection here
-            } else {
-                if (e & 1) { // ready to read_to_buf
-                    Buffer::instance->source = events[i].data.fd;
-                    Buffer::instance->processRequest();
-                    Routing::process(Buffer::instance);
-                }
-            }
-        }
-    }
 
     free(events);
 

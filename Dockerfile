@@ -7,7 +7,7 @@ COPY ./*.h /root/
 COPY ./CMakeListsProd.txt /root/CMakeLists.txt
 EXPOSE 80
 CMD date && \
-	echo "gcc 7.2" &&\
+	echo "gcc 7.2 real bullshit epoll" &&\
 	unzip -j /tmp/data/data.zip '*.json' -d /root > /dev/null &&\
 	cp /tmp/data/options.txt /root &&\	
 	echo 'run cmake' &&\

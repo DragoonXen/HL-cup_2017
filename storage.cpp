@@ -30,7 +30,7 @@ void ::storage::printCnt() {
     fprintf(stdout, "%zu max visits per location\n", maxVal);
     fprintf(stdout, "%.5f avg visits per location\n", ((float) sum) / visitsCount.size());
     std::sort(visitsCount.begin(), visitsCount.end());
-    fprintf(stdout, "%d  median visits per location\n", visitsCount[visitsCount.size() / 2]);
+    fprintf(stdout, "%zu  median visits per location\n", visitsCount[visitsCount.size() / 2]);
     sum = 0;
     maxVal = 0;
     size_t maxUserGetSize = 0;
@@ -54,7 +54,7 @@ void ::storage::printCnt() {
     fprintf(stdout, "%zu max visits per user\n", maxVal);
     fprintf(stdout, "%.5f avg visits per user\n", ((float) sum) / visitsCount.size());
     std::sort(visitsCount.begin(), visitsCount.end());
-    fprintf(stdout, "%d  median visits per user\n", visitsCount[visitsCount.size() / 2]);
+    fprintf(stdout, "%zu  median visits per user\n", visitsCount[visitsCount.size() / 2]);
 
     cnt = 0;
     size_t maxVisitGetSize = 0;
